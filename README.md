@@ -1,6 +1,6 @@
 # Wormatter
 
-A DST-based Go source code formatter that enforces a specific declaration ordering and formatting style.
+A DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.
 
 ## Installation
 

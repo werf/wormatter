@@ -80,20 +80,22 @@ func NewServer() *Server {
 }
 
 func NewServerWithOptions(host string, port int) *Server {
-	return &Server{Host: host, port: port}
+	return &Server{
+		Host: host, port: port,
+	}
 }
-
-func (s *Server) PublicMethod() {}
 
 func (s *Server) AnotherPublic() {
 	fmt.Println("another")
 }
 
+func (s *Server) PublicMethod() {}
+
+func (s *Server) handleRequest() {}
+
 func (s *Server) privateMethod() {
 	return
 }
-
-func (s *Server) handleRequest() {}
 
 type Client struct {
 	URL string
@@ -132,7 +134,9 @@ func NewConfig() Config {
 }
 
 func NewConfigWithDefaults() *Config {
-	return &Config{Timeout: 30, Verbose: true, debug: false, name: "default"}
+	return &Config{
+		Timeout: 30, Verbose: true, debug: false, name: "default",
+	}
 }
 
 type Empty struct{}
@@ -173,23 +177,10 @@ func ProcessDataPublic(data string) string {
 	return strings.ToLower(data)
 }
 
-func helperLower() {
-	fmt.Println("helper")
-}
-
-func processData(data string) string {
-	return strings.ToUpper(data)
-}
-
 func createMixed() *Mixed {
-	return &Mixed{Address: "addr", Name: "test", age: 25, count: 1}
-}
-
-func functionWithReturn() int {
-	x := 1
-	y := 2
-
-	return x + y
+	return &Mixed{
+		Address: "addr", Name: "test", age: 25, count: 1,
+	}
 }
 
 func functionWithEarlyReturn(x int) int {
@@ -203,6 +194,21 @@ func functionWithEarlyReturn(x int) int {
 
 func functionWithOnlyReturn() int {
 	return 42
+}
+
+func functionWithReturn() int {
+	x := 1
+	y := 2
+
+	return x + y
+}
+
+func helperLower() {
+	fmt.Println("helper")
+}
+
+func processData(data string) string {
+	return strings.ToUpper(data)
 }
 
 func standaloneHelper() {}

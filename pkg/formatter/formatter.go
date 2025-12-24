@@ -14,8 +14,10 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/samber/lo"
+	"golang.org/x/mod/modfile"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
+	"mvdan.cc/gofumpt/format"
 )
 
 type declCollector struct {
@@ -164,7 +166,15 @@ func FormatFile(filePath string) error {
 		return err
 	}
 
-	return os.WriteFile(filePath, buf.Bytes(), 0644)
+	formatted, err := format.Source(buf.Bytes(), format.Options{
+		LangVersion: detectGoVersion(filePath),
+		ExtraRules:  true,
+	})
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filePath, formatted, 0644)
 }
 
 func reorderDeclarations(f *dst.File) []dst.Decl {
@@ -823,6 +833,24 @@ func buildCallGraph(funcs []*dst.FuncDecl, localFuncs map[string]bool) map[strin
 	}
 
 	return graph
+}
+
+func detectGoVersion(filePath string) string {
+	dir := filepath.Dir(filePath)
+	for {
+		goModPath := filepath.Join(dir, "go.mod")
+		if data, err := os.ReadFile(goModPath); err == nil {
+			if mf, err := modfile.Parse(goModPath, data, nil); err == nil && mf.Go != nil {
+				return "go" + mf.Go.Version
+			}
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return ""
 }
 
 func containsIota(expr dst.Expr) bool {

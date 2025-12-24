@@ -28,13 +28,6 @@ tasks:
     cmds:
       - go test -v ./...
 
-  format:
-    desc: Format all Go files using wormatter itself
-    deps: [build]
-    cmds:
-      - ./bin/{{.BINARY_NAME}} ./cmd
-      - ./bin/{{.BINARY_NAME}} ./pkg
-
   clean:
     desc: Remove build artifacts
     cmds:
