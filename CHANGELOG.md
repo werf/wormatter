@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/werf/wormatter/compare/v1.0.0...v1.0.1) (2025-12-24)
+
+
+### Bug Fixes
+
+* add docker image publishing ([295b667](https://github.com/werf/wormatter/commit/295b6676dd5a9f470c2a5bd8690cfa1fa93bf728))
+
 ## 1.0.0 (2025-12-24)
 
 
