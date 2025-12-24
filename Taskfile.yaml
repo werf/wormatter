@@ -1,0 +1,46 @@
+version: '3'
+
+vars:
+  BINARY_NAME: wormatter
+  CMD_PATH: ./cmd/wormatter
+
+tasks:
+  build:
+    desc: Build the wormatter binary
+    cmds:
+      - go build -o bin/{{.BINARY_NAME}} {{.CMD_PATH}}
+    sources:
+      - '**/*.go'
+    generates:
+      - bin/{{.BINARY_NAME}}
+
+  build:all:
+    desc: Build binaries for all platforms
+    cmds:
+      - GOOS=linux GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-linux-amd64 {{.CMD_PATH}}
+      - GOOS=linux GOARCH=arm64 go build -o bin/{{.BINARY_NAME}}-linux-arm64 {{.CMD_PATH}}
+      - GOOS=darwin GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-darwin-amd64 {{.CMD_PATH}}
+      - GOOS=darwin GOARCH=arm64 go build -o bin/{{.BINARY_NAME}}-darwin-arm64 {{.CMD_PATH}}
+      - GOOS=windows GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-windows-amd64.exe {{.CMD_PATH}}
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test -v ./...
+
+  format:
+    desc: Format all Go files using wormatter itself
+    deps: [build]
+    cmds:
+      - ./bin/{{.BINARY_NAME}} ./cmd
+      - ./bin/{{.BINARY_NAME}} ./pkg
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - rm -rf bin/
+
+  install:
+    desc: Install the binary to $GOPATH/bin
+    cmds:
+      - go install {{.CMD_PATH}}
