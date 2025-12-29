@@ -18,7 +18,8 @@ import (
 var ErrNeedsFormatting = errors.New("file needs formatting")
 
 type Options struct {
-	CheckOnly bool
+	CheckOnly       bool
+	ExcludePatterns []string
 }
 
 func FormatDirectory(dir string, opts Options) error {
@@ -27,6 +28,9 @@ func FormatDirectory(dir string, opts Options) error {
 			return err
 		}
 		if !d.IsDir() && strings.HasSuffix(path, ".go") {
+			if matchesAnyPattern(path, opts.ExcludePatterns) {
+				return nil
+			}
 			if err := FormatFile(path, opts); err != nil {
 				return err
 			}
@@ -37,6 +41,10 @@ func FormatDirectory(dir string, opts Options) error {
 }
 
 func FormatFile(filePath string, opts Options) error {
+	if matchesAnyPattern(filePath, opts.ExcludePatterns) {
+		return nil
+	}
+
 	fset := token.NewFileSet()
 	f, err := decorator.ParseFile(fset, filePath, nil, parser.ParseComments)
 	if err != nil {
@@ -86,4 +94,17 @@ func FormatFile(filePath string, opts Options) error {
 	}
 
 	return os.WriteFile(filePath, formatted, 0o644)
+}
+
+func matchesAnyPattern(path string, patterns []string) bool {
+	for _, pattern := range patterns {
+		if matched, _ := filepath.Match(pattern, path); matched {
+			return true
+		}
+		if matched, _ := filepath.Match(pattern, filepath.Base(path)); matched {
+			return true
+		}
+	}
+
+	return false
 }

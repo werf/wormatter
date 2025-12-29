@@ -11,11 +11,13 @@ import (
 
 func init() {
 	rootCmd.Flags().BoolVarP(&checkOnly, "check", "c", false, "Check if files need formatting (exit 1 if changes needed)")
+	rootCmd.Flags().StringArrayVarP(&excludePatterns, "exclude", "e", nil, "Exclude files matching glob pattern (can be specified multiple times)")
 }
 
 var (
-	checkOnly bool
-	rootCmd   = &cobra.Command{
+	checkOnly       bool
+	excludePatterns []string
+	rootCmd         = &cobra.Command{
 		Use:     "wormatter <path>...",
 		Short:   "A highly opinionated Go source code formatter",
 		Long:    "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
@@ -33,7 +35,10 @@ func Execute() {
 }
 
 func run(_ *cobra.Command, args []string) error {
-	opts := formatter.Options{CheckOnly: checkOnly}
+	opts := formatter.Options{
+		CheckOnly:       checkOnly,
+		ExcludePatterns: excludePatterns,
+	}
 
 	for _, path := range args {
 		info, err := os.Stat(path)
