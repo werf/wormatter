@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Test: functions should be reordered (main last, init first after imports)
 func helperLower() { fmt.Println("helper") }
 
 func HelperUpper() {}
@@ -13,15 +14,19 @@ func main() {
 	fmt.Println("main")
 }
 
+// Test: vars should be merged and sorted
 var globalZ = 10
 var globalA = 5
 var GlobalPublic = "public"
 
+// Test: consts should be merged and sorted
 const ConstZ = "z"
 const constPrivate = "private"
 
+// Test: type declared in wrong place
 type Processor func(input string) (output string, err error)
 
+// Test: method declared before its type
 func (s *Server) privateMethod() { return }
 
 const ConstA = "a"
@@ -30,14 +35,17 @@ type Reader interface {
 	Read(p []byte) (n int, err error)
 }
 
+// Test: blank var interface check
 var _ fmt.Stringer = (*Server)(nil)
 
+// Test: constructor declared before type
 func NewServer() *Server { return &Server{} }
 
 type Writer interface {
 	Write(p []byte) (n int, err error)
 }
 
+// Test: struct fields should be reordered (embedded, public, private)
 type Server struct {
 	port    int
 	Host    string
@@ -50,10 +58,12 @@ type Server struct {
 
 func (s *Server) PublicMethod() {}
 
+// Test: init should be moved up
 func init() { fmt.Println("init 1") }
 
 var _ Reader = (*Server)(nil)
 
+// Test: struct fields in wrong order
 type Client struct {
 	name string
 	URL  string
@@ -83,6 +93,7 @@ type ReadWriter interface {
 	Write(p []byte) (n int, err error)
 }
 
+// Test: struct literal fields should be reordered
 func NewServerWithOptions(host string, port int) *Server {
 	return &Server{Host: host, port: port}
 }
@@ -112,6 +123,7 @@ func ProcessDataPublic(data string) string {
 
 func (s *Server) handleRequest() {}
 
+// Test: struct fields reordering
 type Config struct {
 	debug   bool
 	Verbose bool
@@ -121,12 +133,14 @@ type Config struct {
 
 func NewConfig() Config { return Config{} }
 
+// Test: struct literal reordering
 func NewConfigWithDefaults() *Config {
 	return &Config{Verbose: true, Timeout: 30, debug: false, name: "default"}
 }
 
 type Empty struct{}
 
+// Test: embedded fields should be sorted
 type OnlyEmbedded struct {
 	fmt.Stringer
 	Reader
@@ -142,6 +156,7 @@ type OnlyPrivate struct {
 	age  int
 }
 
+// Test: mixed struct fields
 type Mixed struct {
 	Embedded
 	*Client
@@ -151,10 +166,12 @@ type Mixed struct {
 	count   int
 }
 
+// Test: struct literal field reordering
 func createMixed() *Mixed {
 	return &Mixed{count: 1, Name: "test", age: 25, Address: "addr"}
 }
 
+// Test: blank line before return
 func functionWithReturn() int {
 	x := 1
 	y := 2
@@ -184,3 +201,89 @@ type EmptyInterface interface{}
 type IntAlias int
 
 func standaloneHelper() {}
+
+// Test: custom type grouping in const block
+type StatusCode MyString
+
+const (
+	StatusOK      StatusCode = "ok"
+	StatusError   StatusCode = "error"
+	StatusPending StatusCode = "pending"
+)
+
+type Priority int
+
+// Test: iota const block should stay separate
+const (
+	PriorityLow Priority = iota
+	PriorityMedium
+	PriorityHigh
+)
+
+// Test: custom type grouping in var block
+var (
+	DefaultStatus StatusCode = "default"
+	ErrorStatus   StatusCode = "error"
+)
+
+// Test: no blank lines between switch cases
+func functionWithSwitch(x int) string {
+	switch x {
+
+	case 1:
+		return "one"
+
+	case 2:
+		return "two"
+
+	default:
+		return "other"
+	}
+}
+
+// Test: no blank lines between select cases
+func functionWithSelect(ch chan int) {
+	select {
+
+	case v := <-ch:
+		fmt.Println(v)
+
+	default:
+		fmt.Println("no value")
+	}
+}
+
+// Test: blank line before comments
+func functionWithComment() {
+	x := 1
+	// This is a comment about y
+	y := 2
+	z := x + y
+	// Another comment
+	// spanning multiple lines
+	fmt.Println(z)
+}
+
+// Test: type switch case spacing
+func functionWithTypeSwitch(x interface{}) string {
+	switch x.(type) {
+
+	case int:
+		return "int"
+
+	case string:
+		return "string"
+
+	default:
+		return "unknown"
+	}
+}
+
+// Test: unexported constructor matching
+type myPrivateType struct {
+	value int
+}
+
+func newMyPrivateType() *myPrivateType {
+	return &myPrivateType{value: 1}
+}

@@ -11,6 +11,14 @@ import (
 	"golang.org/x/mod/modfile"
 )
 
+func getSpecExportGroup(vs *dst.ValueSpec) int {
+	if len(vs.Names) == 0 {
+		return 0
+	}
+
+	return getExportGroup(vs.Names[0].Name)
+}
+
 func detectGoVersion(filePath string) string {
 	modPath := findGoMod(filePath)
 	if modPath == "" {
@@ -71,21 +79,6 @@ func getReceiverTypeName(fn *dst.FuncDecl) string {
 	return extractTypeName(fn.Recv.List[0].Type)
 }
 
-func getSpecExportGroup(vs *dst.ValueSpec) int {
-	if len(vs.Names) == 0 {
-		return 0
-	}
-	name := vs.Names[0].Name
-	switch {
-	case name == "_":
-		return 0
-	case isExported(name):
-		return 1
-	default:
-		return 2
-	}
-}
-
 func hasIota(d *dst.GenDecl) bool {
 	for _, spec := range d.Specs {
 		vs, ok := spec.(*dst.ValueSpec)
@@ -104,27 +97,6 @@ func hasIota(d *dst.GenDecl) bool {
 
 func isFuncInterface(iface *dst.InterfaceType) bool {
 	return iface.Methods != nil && len(iface.Methods.List) == 1 && isFuncType(iface.Methods.List[0].Type)
-}
-
-func addSpaceBeforeReturns(f *dst.File) {
-	dst.Inspect(f, func(n dst.Node) bool {
-		block, ok := n.(*dst.BlockStmt)
-		if !ok || len(block.List) < 2 {
-			return true
-		}
-		for i, stmt := range block.List {
-			if i == 0 {
-				continue
-			}
-			if _, isReturn := stmt.(*dst.ReturnStmt); isReturn {
-				if stmt.Decorations().Before != dst.EmptyLine {
-					stmt.Decorations().Before = dst.EmptyLine
-				}
-			}
-		}
-
-		return true
-	})
 }
 
 func containsIota(expr dst.Expr) bool {
@@ -146,18 +118,6 @@ func containsIota(expr dst.Expr) bool {
 	}
 
 	return false
-}
-
-func expandOneLineFunctions(f *dst.File) {
-	dst.Inspect(f, func(n dst.Node) bool {
-		fn, ok := n.(*dst.FuncDecl)
-		if !ok || fn.Body == nil || len(fn.Body.List) == 0 {
-			return true
-		}
-		fn.Body.List[0].Decorations().Before = dst.NewLine
-
-		return true
-	})
 }
 
 func extractTypeName(expr dst.Expr) string {
@@ -262,28 +222,4 @@ func matchesConstructorPattern(funcName, typeName string) bool {
 	}
 
 	return false
-}
-
-func normalizeSpacing(f *dst.File) {
-	dst.Inspect(f, func(n dst.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch d := n.(type) {
-		case *dst.GenDecl:
-			if d.Decs.Before > dst.EmptyLine {
-				d.Decs.Before = dst.EmptyLine
-			}
-		case *dst.FuncDecl:
-			if d.Decs.Before > dst.EmptyLine {
-				d.Decs.Before = dst.EmptyLine
-			}
-		case *dst.Field:
-			if d.Decs.Before > dst.EmptyLine {
-				d.Decs.Before = dst.EmptyLine
-			}
-		}
-
-		return true
-	})
 }

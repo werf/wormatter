@@ -15,7 +15,6 @@ func init() {
 }
 
 var (
-	checkOnly       bool
 	excludePatterns []string
 	rootCmd         = &cobra.Command{
 		Use:     "wormatter <path>...",
@@ -26,6 +25,8 @@ var (
 		RunE:    run,
 	}
 	version = "dev"
+
+	checkOnly bool
 )
 
 func Execute() {

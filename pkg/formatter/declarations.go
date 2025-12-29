@@ -109,21 +109,26 @@ func mergeSpecsIntoBlock(tok token.Token, specs []dst.Spec) *dst.GenDecl {
 
 func addEmptyLinesBetweenSpecGroups(specs []dst.Spec) {
 	var lastGroup int
+	var lastType string
 	for i, spec := range specs {
 		vs, ok := spec.(*dst.ValueSpec)
 		if !ok {
 			continue
 		}
 		currentGroup := getSpecExportGroup(vs)
+		currentType := getSpecTypeName(spec)
 		if i == 0 {
 			vs.Decs.Before = dst.NewLine
 		} else if currentGroup != lastGroup {
+			vs.Decs.Before = dst.EmptyLine
+		} else if currentGroup != 0 && currentType != lastType {
 			vs.Decs.Before = dst.EmptyLine
 		} else {
 			vs.Decs.Before = dst.NewLine
 		}
 		vs.Decs.After = dst.None
 		lastGroup = currentGroup
+		lastType = currentType
 	}
 }
 

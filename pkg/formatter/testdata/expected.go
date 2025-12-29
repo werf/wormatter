@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// Test: init should be moved up
 func init() {
 	fmt.Println("init 1")
 }
@@ -19,7 +20,18 @@ const (
 	ConstMiddle = "m"
 	ConstZ      = "z"
 
+	StatusError   StatusCode = "error"
+	StatusOK      StatusCode = "ok"
+	StatusPending StatusCode = "pending"
+
 	constPrivate = "private"
+)
+
+// Test: iota const block should stay separate
+const (
+	PriorityLow Priority = iota
+	PriorityMedium
+	PriorityHigh
 )
 
 var (
@@ -29,6 +41,9 @@ var (
 
 	GlobalPublic = "public"
 
+	DefaultStatus StatusCode = "default"
+	ErrorStatus   StatusCode = "error"
+
 	globalA      = 5
 	globalB      = 3
 	globalMiddle = 7
@@ -36,6 +51,7 @@ var (
 	singleConst  = 1
 )
 
+// Test: type declared in wrong place
 type Processor func(input string) (output string, err error)
 
 type Handler func(s string) error
@@ -43,6 +59,11 @@ type Handler func(s string) error
 type MyString string
 
 type IntAlias int
+
+// Test: custom type grouping in const block
+type StatusCode MyString
+
+type Priority int
 
 type Reader interface {
 	Read(p []byte) (n int, err error)
@@ -63,6 +84,7 @@ type ReadWriter interface {
 
 type EmptyInterface interface{}
 
+// Test: struct fields should be reordered (embedded, public, private)
 type Server struct {
 	*Client
 	Embedded
@@ -75,10 +97,12 @@ type Server struct {
 	timeout int
 }
 
+// Test: constructor declared before type
 func NewServer() *Server {
 	return &Server{}
 }
 
+// Test: struct literal fields should be reordered
 func NewServerWithOptions(host string, port int) *Server {
 	return &Server{
 		Host: host, port: port,
@@ -93,10 +117,12 @@ func (s *Server) PublicMethod() {}
 
 func (s *Server) handleRequest() {}
 
+// Test: method declared before its type
 func (s *Server) privateMethod() {
 	return
 }
 
+// Test: struct fields in wrong order
 type Client struct {
 	URL string
 
@@ -121,6 +147,7 @@ func (c *Client) disconnect() {
 
 type Embedded struct{}
 
+// Test: struct fields reordering
 type Config struct {
 	Timeout int
 	Verbose bool
@@ -133,6 +160,7 @@ func NewConfig() Config {
 	return Config{}
 }
 
+// Test: struct literal reordering
 func NewConfigWithDefaults() *Config {
 	return &Config{
 		Timeout: 30, Verbose: true, debug: false, name: "default",
@@ -141,6 +169,7 @@ func NewConfigWithDefaults() *Config {
 
 type Empty struct{}
 
+// Test: embedded fields should be sorted
 type OnlyEmbedded struct {
 	Reader
 	fmt.Stringer
@@ -156,6 +185,7 @@ type OnlyPrivate struct {
 	name string
 }
 
+// Test: mixed struct fields
 type Mixed struct {
 	*Client
 	Embedded
@@ -171,16 +201,41 @@ type SingleField struct {
 	Value int
 }
 
+// Test: unexported constructor matching
+type myPrivateType struct {
+	value int
+}
+
+func newMyPrivateType() *myPrivateType {
+	return &myPrivateType{
+		value: 1,
+	}
+}
+
 func HelperUpper() {}
 
 func ProcessDataPublic(data string) string {
 	return strings.ToLower(data)
 }
 
+// Test: struct literal field reordering
 func createMixed() *Mixed {
 	return &Mixed{
 		Address: "addr", Name: "test", age: 25, count: 1,
 	}
+}
+
+// Test: blank line before comments
+func functionWithComment() {
+	x := 1
+
+	// This is a comment about y
+	y := 2
+	z := x + y
+
+	// Another comment
+	// spanning multiple lines
+	fmt.Println(z)
 }
 
 func functionWithEarlyReturn(x int) int {
@@ -196,6 +251,7 @@ func functionWithOnlyReturn() int {
 	return 42
 }
 
+// Test: blank line before return
 func functionWithReturn() int {
 	x := 1
 	y := 2
@@ -203,6 +259,41 @@ func functionWithReturn() int {
 	return x + y
 }
 
+// Test: no blank lines between select cases
+func functionWithSelect(ch chan int) {
+	select {
+	case v := <-ch:
+		fmt.Println(v)
+	default:
+		fmt.Println("no value")
+	}
+}
+
+// Test: no blank lines between switch cases
+func functionWithSwitch(x int) string {
+	switch x {
+	case 1:
+		return "one"
+	case 2:
+		return "two"
+	default:
+		return "other"
+	}
+}
+
+// Test: type switch case spacing
+func functionWithTypeSwitch(x interface{}) string {
+	switch x.(type) {
+	case int:
+		return "int"
+	case string:
+		return "string"
+	default:
+		return "unknown"
+	}
+}
+
+// Test: functions should be reordered (main last, init first after imports)
 func helperLower() {
 	fmt.Println("helper")
 }

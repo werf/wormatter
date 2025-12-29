@@ -62,6 +62,8 @@ func FormatFile(filePath string, opts Options) error {
 	normalizeSpacing(f)
 	expandOneLineFunctions(f)
 	addSpaceBeforeReturns(f)
+	addSpaceBeforeComments(f)
+	removeBlankLinesBetweenCases(f)
 
 	var buf bytes.Buffer
 	if err := decorator.Fprint(&buf, f); err != nil {

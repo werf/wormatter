@@ -30,6 +30,25 @@ func sortFuncDeclsByExportabilityThenLayer(funcs []*dst.FuncDecl) {
 	copy(funcs, append(exported, unexported...))
 }
 
+func sortSpecsByExportabilityThenName(specs []dst.Spec) {
+	sort.SliceStable(specs, func(i, j int) bool {
+		nameI := getSpecFirstName(specs[i])
+		nameJ := getSpecFirstName(specs[j])
+		groupI := getExportGroup(nameI)
+		groupJ := getExportGroup(nameJ)
+		if groupI != groupJ {
+			return groupI < groupJ
+		}
+		typeI := getSpecTypeName(specs[i])
+		typeJ := getSpecTypeName(specs[j])
+		if typeI != typeJ {
+			return typeI < typeJ
+		}
+
+		return nameI < nameJ
+	})
+}
+
 func splitAndGroupTypeDecls(typeDecls []*dst.GenDecl) []dst.Decl {
 	var simpleTypes, funcInterfaces, nonFuncInterfaces, structs []dst.Decl
 
@@ -87,6 +106,15 @@ func categorizeType(gd *dst.GenDecl, ts *dst.TypeSpec, simpleTypes, funcInterfac
 	default:
 		*simpleTypes = append(*simpleTypes, gd)
 	}
+}
+
+func getSpecTypeName(spec dst.Spec) string {
+	vs, ok := spec.(*dst.ValueSpec)
+	if !ok || vs.Type == nil {
+		return ""
+	}
+
+	return extractTypeName(vs.Type)
 }
 
 func sortDeclsByLayer(decls []dst.Decl) {
@@ -159,19 +187,5 @@ func sortFuncsByLayer(funcs []*dst.FuncDecl) {
 		}
 
 		return funcs[i].Name.Name < funcs[j].Name.Name
-	})
-}
-
-func sortSpecsByExportabilityThenName(specs []dst.Spec) {
-	sort.SliceStable(specs, func(i, j int) bool {
-		nameI := getSpecFirstName(specs[i])
-		nameJ := getSpecFirstName(specs[j])
-		groupI := getExportGroup(nameI)
-		groupJ := getExportGroup(nameJ)
-		if groupI != groupJ {
-			return groupI < groupJ
-		}
-
-		return nameI < nameJ
 	})
 }
