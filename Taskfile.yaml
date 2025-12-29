@@ -3,12 +3,20 @@ version: '3'
 vars:
   BINARY_NAME: wormatter
   CMD_PATH: ./cmd/wormatter
+  VERSION_PKG: github.com/werf/wormatter/internal/cli
+  VERSION:
+    sh: git describe --tags --always --dirty 2>/dev/null || echo "dev"
+  LDFLAGS: -X {{.VERSION_PKG}}.version={{.VERSION}}
 
 tasks:
+  default:
+    desc: Build and test
+    deps: [build, test]
+
   build:
     desc: Build the wormatter binary
     cmds:
-      - go build -o bin/{{.BINARY_NAME}} {{.CMD_PATH}}
+      - go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}} {{.CMD_PATH}}
     sources:
       - '**/*.go'
     generates:
@@ -17,11 +25,11 @@ tasks:
   build:all:
     desc: Build binaries for all platforms
     cmds:
-      - GOOS=linux GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-linux-amd64 {{.CMD_PATH}}
-      - GOOS=linux GOARCH=arm64 go build -o bin/{{.BINARY_NAME}}-linux-arm64 {{.CMD_PATH}}
-      - GOOS=darwin GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-darwin-amd64 {{.CMD_PATH}}
-      - GOOS=darwin GOARCH=arm64 go build -o bin/{{.BINARY_NAME}}-darwin-arm64 {{.CMD_PATH}}
-      - GOOS=windows GOARCH=amd64 go build -o bin/{{.BINARY_NAME}}-windows-amd64.exe {{.CMD_PATH}}
+      - GOOS=linux GOARCH=amd64 go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}}-linux-amd64 {{.CMD_PATH}}
+      - GOOS=linux GOARCH=arm64 go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}}-linux-arm64 {{.CMD_PATH}}
+      - GOOS=darwin GOARCH=amd64 go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}}-darwin-amd64 {{.CMD_PATH}}
+      - GOOS=darwin GOARCH=arm64 go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}}-darwin-arm64 {{.CMD_PATH}}
+      - GOOS=windows GOARCH=amd64 go build -ldflags "{{.LDFLAGS}}" -o bin/{{.BINARY_NAME}}-windows-amd64.exe {{.CMD_PATH}}
 
   test:
     desc: Run tests
@@ -36,4 +44,4 @@ tasks:
   install:
     desc: Install the binary to $GOPATH/bin
     cmds:
-      - go install {{.CMD_PATH}}
+      - go install -ldflags "{{.LDFLAGS}}" {{.CMD_PATH}}
