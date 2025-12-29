@@ -9,7 +9,17 @@ import (
 	"github.com/werf/wormatter/pkg/formatter"
 )
 
-var version = "dev"
+var (
+	rootCmd = &cobra.Command{
+		Use:     "wormatter <path>...",
+		Short:   "A highly opinionated Go source code formatter",
+		Long:    "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
+		Version: version,
+		Args:    cobra.MinimumNArgs(1),
+		RunE:    run,
+	}
+	version = "dev"
+)
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
@@ -17,25 +27,23 @@ func Execute() {
 	}
 }
 
-var rootCmd = &cobra.Command{
-	Use:     "wormatter <file.go|directory>",
-	Short:   "A highly opinionated Go source code formatter",
-	Long:    "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
-	Version: version,
-	Args:    cobra.ExactArgs(1),
-	RunE:    run,
-}
-
 func run(_ *cobra.Command, args []string) error {
-	path := args[0]
-	info, err := os.Stat(path)
-	if err != nil {
-		return fmt.Errorf("cannot access %q: %w", path, err)
+	for _, path := range args {
+		info, err := os.Stat(path)
+		if err != nil {
+			return fmt.Errorf("cannot access %q: %w", path, err)
+		}
+
+		if info.IsDir() {
+			if err := formatter.FormatDirectory(path); err != nil {
+				return err
+			}
+		} else {
+			if err := formatter.FormatFile(path); err != nil {
+				return err
+			}
+		}
 	}
 
-	if info.IsDir() {
-		return formatter.FormatDirectory(path)
-	}
-
-	return formatter.FormatFile(path)
+	return nil
 }

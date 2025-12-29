@@ -26,15 +26,6 @@ func reorderDeclarations(f *dst.File) []dst.Decl {
 	return result
 }
 
-func appendInitFuncs(result []dst.Decl, initFuncs []*dst.FuncDecl) []dst.Decl {
-	for _, initFn := range initFuncs {
-		initFn.Decs.Before = dst.EmptyLine
-		result = append(result, initFn)
-	}
-
-	return result
-}
-
 func appendConstBlock(result []dst.Decl, constSpecs []dst.Spec) []dst.Decl {
 	if len(constSpecs) == 0 {
 		return result
@@ -45,17 +36,6 @@ func appendConstBlock(result []dst.Decl, constSpecs []dst.Spec) []dst.Decl {
 	}
 
 	return append(result, constDecl)
-}
-
-func appendIotaConstBlocks(result []dst.Decl, iotaConstDecls []*dst.GenDecl) []dst.Decl {
-	for _, constDecl := range iotaConstDecls {
-		if len(result) > 0 {
-			constDecl.Decs.Before = dst.EmptyLine
-		}
-		result = append(result, constDecl)
-	}
-
-	return result
 }
 
 func appendVarBlock(result []dst.Decl, blankVarSpecs, varSpecs []dst.Spec) []dst.Decl {
@@ -69,6 +49,17 @@ func appendVarBlock(result []dst.Decl, blankVarSpecs, varSpecs []dst.Spec) []dst
 	}
 
 	return append(result, varDecl)
+}
+
+func appendFunctions(result, functions []dst.Decl) []dst.Decl {
+	for i, fn := range functions {
+		if i == 0 && len(result) > 0 || i > 0 {
+			setDeclSpacing(fn, dst.EmptyLine)
+		}
+		result = append(result, fn)
+	}
+
+	return result
 }
 
 func appendTypesWithMethods(result []dst.Decl, typeDecls []*dst.GenDecl, constructors, methodsByType map[string][]*dst.FuncDecl) []dst.Decl {
@@ -103,37 +94,6 @@ func appendTypesWithMethods(result []dst.Decl, typeDecls []*dst.GenDecl, constru
 	return result
 }
 
-func appendOrphanMethods(result []dst.Decl, orphanMethods []*dst.FuncDecl) []dst.Decl {
-	for _, m := range orphanMethods {
-		if len(result) > 0 {
-			m.Decs.Before = dst.EmptyLine
-		}
-		result = append(result, m)
-	}
-
-	return result
-}
-
-func appendFunctions(result []dst.Decl, functions []dst.Decl) []dst.Decl {
-	for i, fn := range functions {
-		if i == 0 && len(result) > 0 || i > 0 {
-			setDeclSpacing(fn, dst.EmptyLine)
-		}
-		result = append(result, fn)
-	}
-
-	return result
-}
-
-func appendMainFunc(result []dst.Decl, mainFunc *dst.FuncDecl) []dst.Decl {
-	if mainFunc == nil {
-		return result
-	}
-	mainFunc.Decs.Before = dst.EmptyLine
-
-	return append(result, mainFunc)
-}
-
 func mergeSpecsIntoBlock(tok token.Token, specs []dst.Spec) *dst.GenDecl {
 	gd := &dst.GenDecl{
 		Tok:   tok,
@@ -165,6 +125,46 @@ func addEmptyLinesBetweenSpecGroups(specs []dst.Spec) {
 		vs.Decs.After = dst.None
 		lastGroup = currentGroup
 	}
+}
+
+func appendInitFuncs(result []dst.Decl, initFuncs []*dst.FuncDecl) []dst.Decl {
+	for _, initFn := range initFuncs {
+		initFn.Decs.Before = dst.EmptyLine
+		result = append(result, initFn)
+	}
+
+	return result
+}
+
+func appendIotaConstBlocks(result []dst.Decl, iotaConstDecls []*dst.GenDecl) []dst.Decl {
+	for _, constDecl := range iotaConstDecls {
+		if len(result) > 0 {
+			constDecl.Decs.Before = dst.EmptyLine
+		}
+		result = append(result, constDecl)
+	}
+
+	return result
+}
+
+func appendMainFunc(result []dst.Decl, mainFunc *dst.FuncDecl) []dst.Decl {
+	if mainFunc == nil {
+		return result
+	}
+	mainFunc.Decs.Before = dst.EmptyLine
+
+	return append(result, mainFunc)
+}
+
+func appendOrphanMethods(result []dst.Decl, orphanMethods []*dst.FuncDecl) []dst.Decl {
+	for _, m := range orphanMethods {
+		if len(result) > 0 {
+			m.Decs.Before = dst.EmptyLine
+		}
+		result = append(result, m)
+	}
+
+	return result
 }
 
 func setDeclSpacing(decl dst.Decl, spacing dst.SpaceType) {

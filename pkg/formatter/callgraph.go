@@ -7,35 +7,24 @@ import (
 	"gonum.org/v1/gonum/graph/topo"
 )
 
-func buildCallGraph(funcs []*dst.FuncDecl, localFuncs map[string]bool) map[string][]string {
-	graph := make(map[string][]string)
-
-	for _, fn := range funcs {
-		name := fn.Name.Name
-		graph[name] = []string{}
-
-		if fn.Body == nil {
+func hasIota(d *dst.GenDecl) bool {
+	for _, spec := range d.Specs {
+		vs, ok := spec.(*dst.ValueSpec)
+		if !ok {
 			continue
 		}
-
-		dst.Inspect(fn.Body, func(n dst.Node) bool {
-			call, ok := n.(*dst.CallExpr)
-			if !ok {
+		for _, val := range vs.Values {
+			if containsIota(val) {
 				return true
 			}
-			ident, ok := call.Fun.(*dst.Ident)
-			if !ok {
-				return true
-			}
-			if localFuncs[ident.Name] && ident.Name != name {
-				graph[name] = append(graph[name], ident.Name)
-			}
-
-			return true
-		})
+		}
 	}
 
-	return graph
+	return false
+}
+
+func isFuncInterface(iface *dst.InterfaceType) bool {
+	return iface.Methods != nil && len(iface.Methods.List) == 1 && isFuncType(iface.Methods.List[0].Type)
 }
 
 func assignLayers(callGraph map[string][]string, funcNames map[string]bool) map[string]int {
@@ -110,41 +99,35 @@ func assignLayers(callGraph map[string][]string, funcNames map[string]bool) map[
 	return layers
 }
 
-func isFuncInterface(iface *dst.InterfaceType) bool {
-	return iface.Methods != nil && len(iface.Methods.List) == 1 && isFuncType(iface.Methods.List[0].Type)
-}
+func buildCallGraph(funcs []*dst.FuncDecl, localFuncs map[string]bool) map[string][]string {
+	graph := make(map[string][]string)
 
-func isFuncType(expr dst.Expr) bool {
-	_, ok := expr.(*dst.FuncType)
+	for _, fn := range funcs {
+		name := fn.Name.Name
+		graph[name] = []string{}
 
-	return ok
-}
-
-func isBlankVarSpec(spec dst.Spec) bool {
-	vs, ok := spec.(*dst.ValueSpec)
-	if !ok {
-		return false
-	}
-
-	return lo.ContainsBy(vs.Names, func(name *dst.Ident) bool {
-		return name.Name == "_"
-	})
-}
-
-func hasIota(d *dst.GenDecl) bool {
-	for _, spec := range d.Specs {
-		vs, ok := spec.(*dst.ValueSpec)
-		if !ok {
+		if fn.Body == nil {
 			continue
 		}
-		for _, val := range vs.Values {
-			if containsIota(val) {
+
+		dst.Inspect(fn.Body, func(n dst.Node) bool {
+			call, ok := n.(*dst.CallExpr)
+			if !ok {
 				return true
 			}
-		}
+			ident, ok := call.Fun.(*dst.Ident)
+			if !ok {
+				return true
+			}
+			if localFuncs[ident.Name] && ident.Name != name {
+				graph[name] = append(graph[name], ident.Name)
+			}
+
+			return true
+		})
 	}
 
-	return false
+	return graph
 }
 
 func containsIota(expr dst.Expr) bool {
@@ -166,4 +149,21 @@ func containsIota(expr dst.Expr) bool {
 	}
 
 	return false
+}
+
+func isBlankVarSpec(spec dst.Spec) bool {
+	vs, ok := spec.(*dst.ValueSpec)
+	if !ok {
+		return false
+	}
+
+	return lo.ContainsBy(vs.Names, func(name *dst.Ident) bool {
+		return name.Name == "_"
+	})
+}
+
+func isFuncType(expr dst.Expr) bool {
+	_, ok := expr.(*dst.FuncType)
+
+	return ok
 }

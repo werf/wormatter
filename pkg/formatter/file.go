@@ -60,5 +60,10 @@ func FormatFile(filePath string) error {
 		return err
 	}
 
-	return os.WriteFile(filePath, formatted, 0644)
+	formatted, err = formatImports(filePath, formatted)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(filePath, formatted, 0o644)
 }

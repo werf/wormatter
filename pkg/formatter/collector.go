@@ -23,14 +23,6 @@ type declCollector struct {
 	varSpecs       []dst.Spec
 }
 
-func newDeclCollector() *declCollector {
-	return &declCollector{
-		constructors:  make(map[string][]*dst.FuncDecl),
-		methodsByType: make(map[string][]*dst.FuncDecl),
-		typeNames:     make(map[string]bool),
-	}
-}
-
 func (c *declCollector) collect(f *dst.File) {
 	c.collectTypeNames(f)
 
@@ -120,4 +112,12 @@ func (c *declCollector) sort() {
 	sortFuncDeclsByExportabilityThenLayer(c.orphanMethods)
 
 	sortDeclsByExportabilityThenLayer(c.functions)
+}
+
+func newDeclCollector() *declCollector {
+	return &declCollector{
+		constructors:  make(map[string][]*dst.FuncDecl),
+		methodsByType: make(map[string][]*dst.FuncDecl),
+		typeNames:     make(map[string]bool),
+	}
 }

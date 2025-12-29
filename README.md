@@ -1,6 +1,6 @@
 # Wormatter
 
-A DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.
+A DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt and gci built-in.
 
 ## Installation
 

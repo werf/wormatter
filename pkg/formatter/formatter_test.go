@@ -20,7 +20,7 @@ func TestFormatter(t *testing.T) {
 		t.Fatalf("failed to read input file: %v", err)
 	}
 
-	if err := os.WriteFile(actualPath, inputBytes, 0644); err != nil {
+	if err := os.WriteFile(actualPath, inputBytes, 0o644); err != nil {
 		t.Fatalf("failed to write actual file: %v", err)
 	}
 	defer os.Remove(actualPath)

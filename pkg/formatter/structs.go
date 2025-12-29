@@ -16,6 +16,27 @@ func reorderStructFields(f *dst.File) {
 	})
 }
 
+func collectStructDefinitions(f *dst.File) map[string][]string {
+	structDefs := make(map[string][]string)
+
+	dst.Inspect(f, func(n dst.Node) bool {
+		ts, ok := n.(*dst.TypeSpec)
+		if !ok {
+			return true
+		}
+		st, ok := ts.Type.(*dst.StructType)
+		if !ok {
+			return true
+		}
+
+		structDefs[ts.Name.Name] = computeFieldOrder(st)
+
+		return true
+	})
+
+	return structDefs
+}
+
 func reorderFields(st *dst.StructType) {
 	if st.Fields == nil || len(st.Fields.List) == 0 {
 		return
@@ -38,6 +59,29 @@ func reorderFields(st *dst.StructType) {
 	sortFieldsByName(private)
 
 	st.Fields.List = assembleFieldList(embedded, public, private)
+}
+
+func reorderStructLiterals(f *dst.File, structDefs map[string][]string) {
+	dst.Inspect(f, func(n dst.Node) bool {
+		cl, ok := n.(*dst.CompositeLit)
+		if !ok {
+			return true
+		}
+
+		typeName := extractTypeName(cl.Type)
+		if typeName == "" {
+			return true
+		}
+
+		fieldOrder, exists := structDefs[typeName]
+		if !exists {
+			return true
+		}
+
+		reorderCompositeLitFields(cl, fieldOrder)
+
+		return true
+	})
 }
 
 func assembleFieldList(embedded, public, private []*dst.Field) []*dst.Field {
@@ -71,27 +115,6 @@ func assembleFieldList(embedded, public, private []*dst.Field) []*dst.Field {
 	return result
 }
 
-func collectStructDefinitions(f *dst.File) map[string][]string {
-	structDefs := make(map[string][]string)
-
-	dst.Inspect(f, func(n dst.Node) bool {
-		ts, ok := n.(*dst.TypeSpec)
-		if !ok {
-			return true
-		}
-		st, ok := ts.Type.(*dst.StructType)
-		if !ok {
-			return true
-		}
-
-		structDefs[ts.Name.Name] = computeFieldOrder(st)
-
-		return true
-	})
-
-	return structDefs
-}
-
 func computeFieldOrder(st *dst.StructType) []string {
 	var embedded, public, private []string
 
@@ -118,29 +141,6 @@ func computeFieldOrder(st *dst.StructType) []string {
 	result = append(result, private...)
 
 	return result
-}
-
-func reorderStructLiterals(f *dst.File, structDefs map[string][]string) {
-	dst.Inspect(f, func(n dst.Node) bool {
-		cl, ok := n.(*dst.CompositeLit)
-		if !ok {
-			return true
-		}
-
-		typeName := extractTypeName(cl.Type)
-		if typeName == "" {
-			return true
-		}
-
-		fieldOrder, exists := structDefs[typeName]
-		if !exists {
-			return true
-		}
-
-		reorderCompositeLitFields(cl, fieldOrder)
-
-		return true
-	})
 }
 
 func reorderCompositeLitFields(cl *dst.CompositeLit, fieldOrder []string) {
