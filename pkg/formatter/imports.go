@@ -2,7 +2,6 @@ package formatter
 
 import (
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/daixiang0/gci/pkg/config"
@@ -78,21 +77,4 @@ func extractOrgPrefix(modulePath string) string {
 	}
 
 	return strings.Join(parts[:2], "/") + "/"
-}
-
-func findGoMod(filePath string) string {
-	dir := filepath.Dir(filePath)
-	for {
-		goModPath := filepath.Join(dir, "go.mod")
-		if _, err := os.Stat(goModPath); err == nil {
-			return goModPath
-		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
-	}
-
-	return ""
 }

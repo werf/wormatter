@@ -2,30 +2,9 @@ package formatter
 
 import (
 	"github.com/dave/dst"
-	"github.com/samber/lo"
 	"gonum.org/v1/gonum/graph/simple"
 	"gonum.org/v1/gonum/graph/topo"
 )
-
-func hasIota(d *dst.GenDecl) bool {
-	for _, spec := range d.Specs {
-		vs, ok := spec.(*dst.ValueSpec)
-		if !ok {
-			continue
-		}
-		for _, val := range vs.Values {
-			if containsIota(val) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func isFuncInterface(iface *dst.InterfaceType) bool {
-	return iface.Methods != nil && len(iface.Methods.List) == 1 && isFuncType(iface.Methods.List[0].Type)
-}
 
 func assignLayers(callGraph map[string][]string, funcNames map[string]bool) map[string]int {
 	g := simple.NewDirectedGraph()
@@ -128,42 +107,4 @@ func buildCallGraph(funcs []*dst.FuncDecl, localFuncs map[string]bool) map[strin
 	}
 
 	return graph
-}
-
-func containsIota(expr dst.Expr) bool {
-	switch e := expr.(type) {
-	case *dst.Ident:
-		return e.Name == "iota"
-	case *dst.BinaryExpr:
-		return containsIota(e.X) || containsIota(e.Y)
-	case *dst.UnaryExpr:
-		return containsIota(e.X)
-	case *dst.ParenExpr:
-		return containsIota(e.X)
-	case *dst.CallExpr:
-		for _, arg := range e.Args {
-			if containsIota(arg) {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func isBlankVarSpec(spec dst.Spec) bool {
-	vs, ok := spec.(*dst.ValueSpec)
-	if !ok {
-		return false
-	}
-
-	return lo.ContainsBy(vs.Names, func(name *dst.Ident) bool {
-		return name.Name == "_"
-	})
-}
-
-func isFuncType(expr dst.Expr) bool {
-	_, ok := expr.(*dst.FuncType)
-
-	return ok
 }

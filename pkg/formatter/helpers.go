@@ -7,8 +7,28 @@ import (
 	"unicode"
 
 	"github.com/dave/dst"
+	"github.com/samber/lo"
 	"golang.org/x/mod/modfile"
 )
+
+func detectGoVersion(filePath string) string {
+	modPath := findGoMod(filePath)
+	if modPath == "" {
+		return ""
+	}
+
+	data, err := os.ReadFile(modPath)
+	if err != nil {
+		return ""
+	}
+
+	mf, err := modfile.Parse(modPath, data, nil)
+	if err != nil || mf.Go == nil {
+		return ""
+	}
+
+	return "go" + mf.Go.Version
+}
 
 func findConstructorType(fn *dst.FuncDecl, typeNames map[string]bool) string {
 	if fn.Type.Results == nil || len(fn.Type.Results.List) == 0 {
@@ -66,6 +86,26 @@ func getSpecExportGroup(vs *dst.ValueSpec) int {
 	}
 }
 
+func hasIota(d *dst.GenDecl) bool {
+	for _, spec := range d.Specs {
+		vs, ok := spec.(*dst.ValueSpec)
+		if !ok {
+			continue
+		}
+		for _, val := range vs.Values {
+			if containsIota(val) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func isFuncInterface(iface *dst.InterfaceType) bool {
+	return iface.Methods != nil && len(iface.Methods.List) == 1 && isFuncType(iface.Methods.List[0].Type)
+}
+
 func addSpaceBeforeReturns(f *dst.File) {
 	dst.Inspect(f, func(n dst.Node) bool {
 		block, ok := n.(*dst.BlockStmt)
@@ -87,23 +127,25 @@ func addSpaceBeforeReturns(f *dst.File) {
 	})
 }
 
-func detectGoVersion(filePath string) string {
-	dir := filepath.Dir(filePath)
-	for {
-		goModPath := filepath.Join(dir, "go.mod")
-		if data, err := os.ReadFile(goModPath); err == nil {
-			if mf, err := modfile.Parse(goModPath, data, nil); err == nil && mf.Go != nil {
-				return "go" + mf.Go.Version
+func containsIota(expr dst.Expr) bool {
+	switch e := expr.(type) {
+	case *dst.Ident:
+		return e.Name == "iota"
+	case *dst.BinaryExpr:
+		return containsIota(e.X) || containsIota(e.Y)
+	case *dst.UnaryExpr:
+		return containsIota(e.X)
+	case *dst.ParenExpr:
+		return containsIota(e.X)
+	case *dst.CallExpr:
+		for _, arg := range e.Args {
+			if containsIota(arg) {
+				return true
 			}
 		}
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			break
-		}
-		dir = parent
 	}
 
-	return ""
+	return false
 }
 
 func expandOneLineFunctions(f *dst.File) {
@@ -135,6 +177,23 @@ func extractTypeName(expr dst.Expr) string {
 	return ""
 }
 
+func findGoMod(filePath string) string {
+	dir := filepath.Dir(filePath)
+	for {
+		goModPath := filepath.Join(dir, "go.mod")
+		if _, err := os.Stat(goModPath); err == nil {
+			return goModPath
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+
+	return ""
+}
+
 func getSpecFirstName(spec dst.Spec) string {
 	switch s := spec.(type) {
 	case *dst.ValueSpec:
@@ -148,8 +207,25 @@ func getSpecFirstName(spec dst.Spec) string {
 	return ""
 }
 
+func isBlankVarSpec(spec dst.Spec) bool {
+	vs, ok := spec.(*dst.ValueSpec)
+	if !ok {
+		return false
+	}
+
+	return lo.ContainsBy(vs.Names, func(name *dst.Ident) bool {
+		return name.Name == "_"
+	})
+}
+
 func isExported(name string) bool {
 	return len(name) > 0 && unicode.IsUpper(rune(name[0]))
+}
+
+func isFuncType(expr dst.Expr) bool {
+	_, ok := expr.(*dst.FuncType)
+
+	return ok
 }
 
 func isGeneratedFile(f *dst.File) bool {
