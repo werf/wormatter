@@ -2,6 +2,8 @@ package formatter
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"go/parser"
 	"go/token"
 	"io/fs"
@@ -13,13 +15,19 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
-func FormatDirectory(dir string) error {
+var ErrNeedsFormatting = errors.New("file needs formatting")
+
+type Options struct {
+	CheckOnly bool
+}
+
+func FormatDirectory(dir string, opts Options) error {
 	return filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		if !d.IsDir() && strings.HasSuffix(path, ".go") {
-			if err := FormatFile(path); err != nil {
+			if err := FormatFile(path, opts); err != nil {
 				return err
 			}
 		}
@@ -28,7 +36,7 @@ func FormatDirectory(dir string) error {
 	})
 }
 
-func FormatFile(filePath string) error {
+func FormatFile(filePath string, opts Options) error {
 	fset := token.NewFileSet()
 	f, err := decorator.ParseFile(fset, filePath, nil, parser.ParseComments)
 	if err != nil {
@@ -63,6 +71,18 @@ func FormatFile(filePath string) error {
 	formatted, err = formatImports(filePath, formatted)
 	if err != nil {
 		return err
+	}
+
+	if opts.CheckOnly {
+		original, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+		if !bytes.Equal(original, formatted) {
+			return fmt.Errorf("%s: %w", filePath, ErrNeedsFormatting)
+		}
+
+		return nil
 	}
 
 	return os.WriteFile(filePath, formatted, 0o644)

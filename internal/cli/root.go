@@ -9,8 +9,13 @@ import (
 	"github.com/werf/wormatter/pkg/formatter"
 )
 
+func init() {
+	rootCmd.Flags().BoolVarP(&checkOnly, "check", "c", false, "Check if files need formatting (exit 1 if changes needed)")
+}
+
 var (
-	rootCmd = &cobra.Command{
+	checkOnly bool
+	rootCmd   = &cobra.Command{
 		Use:     "wormatter <path>...",
 		Short:   "A highly opinionated Go source code formatter",
 		Long:    "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
@@ -28,6 +33,8 @@ func Execute() {
 }
 
 func run(_ *cobra.Command, args []string) error {
+	opts := formatter.Options{CheckOnly: checkOnly}
+
 	for _, path := range args {
 		info, err := os.Stat(path)
 		if err != nil {
@@ -35,11 +42,11 @@ func run(_ *cobra.Command, args []string) error {
 		}
 
 		if info.IsDir() {
-			if err := formatter.FormatDirectory(path); err != nil {
+			if err := formatter.FormatDirectory(path, opts); err != nil {
 				return err
 			}
 		} else {
-			if err := formatter.FormatFile(path); err != nil {
+			if err := formatter.FormatFile(path, opts); err != nil {
 				return err
 			}
 		}

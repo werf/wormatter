@@ -25,7 +25,7 @@ func TestFormatter(t *testing.T) {
 	}
 	defer os.Remove(actualPath)
 
-	if err := formatter.FormatFile(actualPath); err != nil {
+	if err := formatter.FormatFile(actualPath, formatter.Options{}); err != nil {
 		t.Fatalf("formatter failed: %v", err)
 	}
 
