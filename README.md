@@ -60,17 +60,19 @@ Types within each category preserve their original order.
 ### Type-Associated Declarations
 
 After each type definition:
-1. **Constructors** — functions starting with `New` that return the type
+1. **Constructors** — functions starting with `New` or `new` that return the type
 2. **Methods** — functions with receiver of that type
 
 #### Constructor Matching
 
 A function is a constructor for type `T` if:
-- Name starts with `New`
+- Name starts with `New` (exported) or `new` (unexported)
 - Returns `T`, `*T`, `(T, error)`, `(*T, error)`, etc.
-- Name after `New` is either exactly `T` or starts with `T` followed by non-lowercase char
+- Name after `New`/`new` matches `T` case-insensitively, or starts with `T` followed by non-lowercase char
   - `NewFoo` ✓ matches `Foo`
+  - `newFoo` ✓ matches `foo` (case-insensitive)
   - `NewFooWithOptions` ✓ matches `Foo`
+  - `newFooWithOptions` ✓ matches `foo`
   - `NewFoobar` ✗ does NOT match `Foo` (would match `Foobar`)
 
 #### Constructor/Method Sorting

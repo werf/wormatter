@@ -243,11 +243,19 @@ func isGeneratedFile(f *dst.File) bool {
 }
 
 func matchesConstructorPattern(funcName, typeName string) bool {
-	suffix := strings.TrimPrefix(funcName, "New")
-	if suffix == typeName {
+	var suffix string
+	if strings.HasPrefix(funcName, "New") {
+		suffix = strings.TrimPrefix(funcName, "New")
+	} else if strings.HasPrefix(funcName, "new") {
+		suffix = strings.TrimPrefix(funcName, "new")
+	} else {
+		return false
+	}
+
+	if strings.EqualFold(suffix, typeName) {
 		return true
 	}
-	if strings.HasPrefix(suffix, typeName) && len(suffix) > len(typeName) {
+	if len(suffix) > len(typeName) && strings.EqualFold(suffix[:len(typeName)], typeName) {
 		nextChar := rune(suffix[len(typeName)])
 
 		return !unicode.IsLower(nextChar)

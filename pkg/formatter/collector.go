@@ -23,6 +23,14 @@ type declCollector struct {
 	varSpecs       []dst.Spec
 }
 
+func newDeclCollector() *declCollector {
+	return &declCollector{
+		constructors:  make(map[string][]*dst.FuncDecl),
+		methodsByType: make(map[string][]*dst.FuncDecl),
+		typeNames:     make(map[string]bool),
+	}
+}
+
 func (c *declCollector) collect(f *dst.File) {
 	c.collectTypeNames(f)
 
@@ -49,7 +57,7 @@ func (c *declCollector) collectFuncDecl(d *dst.FuncDecl) {
 		c.initFuncs = append(c.initFuncs, d)
 	case d.Name.Name == "main":
 		c.mainFunc = d
-	case strings.HasPrefix(d.Name.Name, "New"):
+	case strings.HasPrefix(d.Name.Name, "New") || strings.HasPrefix(d.Name.Name, "new"):
 		if typeName := findConstructorType(d, c.typeNames); typeName != "" {
 			c.constructors[typeName] = append(c.constructors[typeName], d)
 		} else {
@@ -112,12 +120,4 @@ func (c *declCollector) sort() {
 	sortFuncDeclsByExportabilityThenLayer(c.orphanMethods)
 
 	sortDeclsByExportabilityThenLayer(c.functions)
-}
-
-func newDeclCollector() *declCollector {
-	return &declCollector{
-		constructors:  make(map[string][]*dst.FuncDecl),
-		methodsByType: make(map[string][]*dst.FuncDecl),
-		typeNames:     make(map[string]bool),
-	}
 }
