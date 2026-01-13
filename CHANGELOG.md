@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/werf/wormatter/compare/v1.1.0...v1.1.1) (2026-01-13)
+
+
+### Bug Fixes
+
+* forcefully disable CGO ([c062bb3](https://github.com/werf/wormatter/commit/c062bb3d7fb9bf612bf0bc9c82a0fe6909674917))
+
 ## [1.1.0](https://github.com/werf/wormatter/compare/v1.0.1...v1.1.0) (2025-12-29)
 
 
