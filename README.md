@@ -56,129 +56,329 @@ task build
 
 ## Formatting Rules
 
-### Declaration Order (top to bottom)
+### File-Level Declaration Order
 
-1. **Imports** — unchanged
-2. **init functions** — preserved in original order
-3. **Constants** — merged into single `const()` block
-4. **Variables** — merged into single `var()` block
-5. **Types** — grouped by category, each followed by constructors and methods
-6. **Standalone functions** — sorted by exportability
-7. **main function** — always last
+Declarations are reordered top to bottom:
 
-### Const/Var Block Rules
+| Order | Declaration | Notes |
+|-------|-------------|-------|
+| 1 | Imports | Unchanged |
+| 2 | `init()` functions | Preserved in original order |
+| 3 | Constants | Merged into single `const()` block |
+| 4 | Variables | Merged into single `var()` block |
+| 5 | Types | Grouped by category, each followed by its constructors and methods |
+| 6 | Standalone functions | Sorted by exportability, then by architectural layer |
+| 7 | `main()` function | Always last |
 
-#### Grouping (separated by empty lines)
-1. Blank identifier (`var _ Interface = ...`) — all together, no sub-grouping
-2. Public (uppercase first letter) — sub-grouped by custom type
-3. Private (lowercase first letter) — sub-grouped by custom type
+<details>
+<summary>Example</summary>
 
-#### Custom type sub-grouping
-Within public and private groups, values with explicit custom types are grouped together:
 ```go
+// Before
+func helper() {}
+var name = "app"
+type Config struct{}
+func main() {}
+const version = "1.0"
+func init() { setup() }
+func NewConfig() *Config { return &Config{} }
+
+// After
+const version = "1.0"
+
+var name = "app"
+
+func init() { setup() }
+
+type Config struct{}
+
+func NewConfig() *Config { return &Config{} }
+
+func helper() {}
+
+func main() {}
+```
+
+</details>
+
+---
+
+### Constants and Variables
+
+**Block format:**
+- Single declaration → inline: `const X = 1`
+- Multiple declarations → parenthesized block: `const ( ... )`
+
+**Grouping** (separated by empty lines):
+
+| Priority | Group | Sub-grouping |
+|----------|-------|--------------|
+| 1 | Blank identifiers (`var _ Interface = ...`) | None |
+| 2 | Public (uppercase) | By custom type |
+| 3 | Private (lowercase) | By custom type |
+
+**Within each group:** sorted alphabetically, no empty lines.
+
+<details>
+<summary>Example</summary>
+
+```go
+// Before
 const (
-    ConstA = "a"
-    ConstB = "b"
-
-    StatusOK    StatusCode = "ok"
+    maxRetries = 3
+    StatusOK StatusCode = "ok"
+    AppName = "myapp"
     StatusError StatusCode = "error"
+    defaultTimeout = 30
+    Version = "1.0"
+)
 
-    constPrivate = "private"
+// After
+const (
+    AppName = "myapp"
+    Version = "1.0"
+
+    StatusError StatusCode = "error"
+    StatusOK    StatusCode = "ok"
+
+    defaultTimeout = 30
+    maxRetries     = 3
 )
 ```
 
-#### Within each group/sub-group
-- Sorted alphabetically by first name
-- No empty lines between elements
+</details>
 
-#### Block format
-- Single declaration: `const X = 1`
-- Multiple declarations: `const ( ... )` with parentheses
+---
 
-### Type Grouping Order
+### Types
 
-Types are grouped by category (in this order):
-1. Simple types (aliases like `type MyString string`, function types)
-2. Function interfaces (interfaces with exactly one method)
-3. Non-function interfaces (interfaces with 0 or 2+ methods)
-4. Structs
+**Category order:**
+
+| Order | Category | Example |
+|-------|----------|---------|
+| 1 | Simple types | `type MyString string`, function types |
+| 2 | Function interfaces | Interfaces with exactly 1 method |
+| 3 | Other interfaces | Interfaces with 0 or 2+ methods |
+| 4 | Structs | — |
 
 Types within each category preserve their original order.
 
-### Type-Associated Declarations
+**After each type definition:**
+1. Constructors (functions starting with `New`/`new` that return the type)
+2. Methods (functions with receiver of that type)
 
-After each type definition:
-1. **Constructors** — functions starting with `New` or `new` that return the type
-2. **Methods** — functions with receiver of that type
-
-#### Constructor Matching
-
-A function is a constructor for type `T` if:
+**Constructor matching** for type `T`:
 - Name starts with `New` (exported) or `new` (unexported)
 - Returns `T`, `*T`, `(T, error)`, `(*T, error)`, etc.
-- Name after `New`/`new` matches `T` case-insensitively, or starts with `T` followed by non-lowercase char
-  - `NewFoo` ✓ matches `Foo`
-  - `newFoo` ✓ matches `foo` (case-insensitive)
-  - `NewFooWithOptions` ✓ matches `Foo`
-  - `newFooWithOptions` ✓ matches `foo`
-  - `NewFoobar` ✗ does NOT match `Foo` (would match `Foobar`)
+- Name suffix matches `T` case-insensitively, or starts with `T` + non-lowercase char
 
-#### Constructor/Method Sorting
-- Constructors: alphabetically by name
-- Methods: exported first, then unexported; within each group sorted by architectural layer
+| Function | Type `Foo` | Match? |
+|----------|------------|--------|
+| `NewFoo` | `Foo` | ✓ |
+| `newFoo` | `foo` | ✓ |
+| `NewFooWithOptions` | `Foo` | ✓ |
+| `NewFoobar` | `Foo` | ✗ (matches `Foobar`) |
 
-#### Standalone Functions Sorting
-- Exported first, then unexported
-- Within each group: sorted by architectural layer (high-level first, utilities last)
+**Sorting:**
+- Constructors: alphabetically
+- Methods: exported first, then unexported; each group sorted by architectural layer
 
-### Architectural Layer
+<details>
+<summary>Example</summary>
 
-Layer is determined by call depth to other local functions:
-- Layer 0: functions that call no other local functions (leaves/utilities)
-- Layer 1: functions that only call layer 0 functions
-- Layer N: functions that call layer N-1 or lower
-- Cyclic calls: functions in a cycle share the same layer
-
-Higher layers appear first (orchestrators before utilities).
-
-### Struct Field Ordering
-
-Fields grouped into three blocks (separated by empty lines):
-1. **Embedded** — fields without names, sorted alphabetically by type name
-2. **Public** — uppercase names, sorted alphabetically
-3. **Private** — lowercase names, sorted alphabetically
-
-### Struct Literal Ordering
-
-When instantiating structs with named fields:
 ```go
-&Config{Timeout: 30, Verbose: true, debug: false}
+// Before
+type Server struct {
+    port int
+}
+func (s *Server) Start() {}
+func (s *Server) stop() {}
+type Handler func(r Request)
+func NewServer(port int) *Server { return &Server{port: port} }
+func NewServerWithTLS(port int, cert string) *Server { return &Server{port: port} }
+func (s *Server) Listen() {}
+type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+
+// After
+type Handler func(r Request)
+
+type Reader interface {
+    Read(p []byte) (n int, err error)
+}
+
+type Server struct {
+    port int
+}
+
+func NewServer(port int) *Server { return &Server{port: port} }
+
+func NewServerWithTLS(port int, cert string) *Server { return &Server{port: port} }
+
+func (s *Server) Listen() {}
+
+func (s *Server) Start() {}
+
+func (s *Server) stop() {}
 ```
-Fields are reordered to match struct definition order (embedded → public → private).
-No empty lines between fields in literals.
 
-### Function Body Rules
+</details>
 
-#### One-line functions
+---
+
+### Struct Fields
+
+Fields are grouped (separated by empty lines):
+
+| Order | Group | Sorting |
+|-------|-------|---------|
+| 1 | Embedded | Alphabetically by type name |
+| 2 | Public | Alphabetically |
+| 3 | Private | Alphabetically |
+
+**Struct literals** with named fields are reordered to match the struct definition.
+
+<details>
+<summary>Example</summary>
+
+```go
+// Before
+type Server struct {
+    port     int
+    Logger
+    Name     string
+    host     string
+    Timeout  int
+    io.Reader
+}
+
+// After
+type Server struct {
+    io.Reader
+    Logger
+
+    Name    string
+    Timeout int
+
+    host string
+    port int
+}
+```
+
+```go
+// Struct literal — before
+cfg := &Config{debug: true, Timeout: 30, Name: "app"}
+
+// Struct literal — after (matches struct field order)
+cfg := &Config{Name: "app", Timeout: 30, debug: true}
+```
+
+</details>
+
+---
+
+### Functions
+
+**Standalone functions sorting:**
+1. Exported first, then unexported
+2. Within each group: by architectural layer (high-level first)
+
+**Architectural layer** — determined by call depth to local functions:
+- Layer 0: calls no local functions (utilities)
+- Layer N: calls functions from layer N-1 or lower
+- Cyclic calls share the same layer
+
+Higher layers appear first (orchestrators → utilities).
+
+<details>
+<summary>Example</summary>
+
+```go
+// Before
+func validate(s string) bool { return len(s) > 0 }
+func process(s string) string { return transform(s) }
+func transform(s string) string { return strings.ToUpper(s) }
+func Run(input string) {
+    if validate(input) {
+        result := process(input)
+        fmt.Println(result)
+    }
+}
+
+// After — exported first, then by layer (high to low)
+func Run(input string) {          // Layer 2: calls validate, process
+    if validate(input) {
+        result := process(input)
+        fmt.Println(result)
+    }
+}
+
+func process(s string) string {   // Layer 1: calls transform
+    return transform(s)
+}
+
+func transform(s string) string { // Layer 0: no local calls
+    return strings.ToUpper(s)
+}
+
+func validate(s string) bool {    // Layer 0: no local calls
+    return len(s) > 0
+}
+```
+
+</details>
+
+**Body formatting:**
 - Empty body stays one line: `func foo() {}`
 - Non-empty body expands to multiple lines
+- Empty line before `return` (unless it's the first statement)
+- Empty line before line comments (unless first in block)
+- No empty lines between `case` clauses in `switch`/`select`
 
-#### Return statements
-- Empty line before `return` if there's code before it in the same block
-- No empty line if `return` is the first/only statement
+<details>
+<summary>Example</summary>
 
-#### Comments
-- Empty line before line comments (`//`), unless it's the first statement in a block
-- End-of-line comments don't trigger this rule
+```go
+// Before
+func process(x int) int {
+    result := x * 2
+    return result
+}
 
-#### Switch/Select statements
-- No empty lines between case clauses
-- Cases are kept compact
+// After — empty line before return
+func process(x int) int {
+    result := x * 2
 
-### Spacing Rules
+    return result
+}
+```
 
-- Single blank line between major sections
-- Single blank line between each type definition
-- Single blank line between each function/method/constructor
-- Double blank lines are compacted to single
+```go
+// Before
+switch x {
+case 1:
+    return "one"
+
+case 2:
+    return "two"
+}
+
+// After — no empty lines between cases
+switch x {
+case 1:
+    return "one"
+case 2:
+    return "two"
+}
+```
+
+</details>
+
+---
+
+### Spacing
+
+- Single blank line between major sections, type definitions, and functions
+- Double blank lines compacted to single
 - No blank lines within const/var groups (only between groups)
