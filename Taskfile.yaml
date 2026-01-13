@@ -1,5 +1,8 @@
 version: '3'
 
+env:
+  CGO_ENABLED: '0'
+
 vars:
   BINARY_NAME: wormatter
   CMD_PATH: ./cmd/wormatter
