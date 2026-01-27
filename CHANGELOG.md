@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/werf/wormatter/compare/v1.1.1...v1.2.0) (2026-01-27)
+
+
+### Features
+
+* expand value-only field assignments to key-value ([1c9a5ea](https://github.com/werf/wormatter/commit/1c9a5ea1dc501c09841a51d1d6e93660b35f235e))
+
 ## [1.1.1](https://github.com/werf/wormatter/compare/v1.1.0...v1.1.1) (2026-01-13)
 
 
