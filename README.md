@@ -292,6 +292,23 @@ This conversion only applies to structs defined in the same file. External struc
 
 ### Functions
 
+**Function signatures** are always collapsed to a single line:
+
+```go
+// Before — multi-line signature
+func Process(
+    ctx context.Context,
+    input Input,
+) (Output, error) {
+
+// After — single line
+func Process(ctx context.Context, input Input) (Output, error) {
+```
+
+This applies to function definitions, methods, function types, and interface methods.
+
+---
+
 **Standalone functions sorting:**
 1. Exported first, then unexported
 2. Within each group: by architectural layer (high-level first)

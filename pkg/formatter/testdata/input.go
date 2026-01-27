@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -338,3 +340,46 @@ func createKeyed() *PositionalTest {
 func createEmpty() *PositionalTest {
 	return &PositionalTest{}
 }
+
+// Test: multi-line func signature should collapse to single line
+func multiLineFunc(
+	a int,
+	b string,
+	c bool,
+) error {
+	return nil
+}
+
+// Test: multi-line method signature should collapse
+func (s *Server) multiLineMethod(
+	ctx context.Context,
+	input string,
+) (string, error) {
+	return input, nil
+}
+
+// Test: multi-line return values should collapse
+func multiLineReturns() (
+	result string,
+	err error,
+) {
+	return "", nil
+}
+
+// Test: function type should collapse
+type MultiLineHandler func(
+	w http.ResponseWriter,
+	r *http.Request,
+)
+
+// Test: interface method should collapse
+type MultiLineInterface interface {
+	Process(
+		ctx context.Context,
+		input Input,
+	) (Output, error)
+}
+
+// Types for interface test
+type Input struct{}
+type Output struct{}

@@ -127,3 +127,58 @@ func normalizeSpacing(f *dst.File) {
 		return true
 	})
 }
+
+func collapseFuncSignatures(f *dst.File) {
+	dst.Inspect(f, func(n dst.Node) bool {
+		switch node := n.(type) {
+		case *dst.FuncDecl:
+			if node.Type != nil {
+				collapseFuncType(node.Type)
+			}
+		case *dst.FuncLit:
+			if node.Type != nil {
+				collapseFuncType(node.Type)
+			}
+		case *dst.TypeSpec:
+			if ft, ok := node.Type.(*dst.FuncType); ok {
+				collapseFuncType(ft)
+			}
+		case *dst.InterfaceType:
+			if node.Methods != nil {
+				for _, method := range node.Methods.List {
+					if ft, ok := method.Type.(*dst.FuncType); ok {
+						collapseFuncType(ft)
+					}
+				}
+			}
+		}
+
+		return true
+	})
+}
+
+func collapseFuncType(ft *dst.FuncType) {
+	if ft.Params != nil {
+		collapseFieldList(ft.Params)
+	}
+	if ft.Results != nil {
+		collapseFieldList(ft.Results)
+	}
+}
+
+func collapseFieldList(fl *dst.FieldList) {
+	// Remove newlines from opening paren
+	fl.Decs.Opening = nil
+
+	for i, field := range fl.List {
+		// First field: no newline before
+		if i == 0 {
+			field.Decs.Before = dst.None
+		} else {
+			// Subsequent fields: space only (comma handled automatically)
+			field.Decs.Before = dst.None
+		}
+		// No newline after any field
+		field.Decs.After = dst.None
+	}
+}
