@@ -57,8 +57,8 @@ var (
 		content string
 		path    string
 	}{
-		{path: filepath.Join("a", "b"), content: "content1"},
-		{path: filepath.Join("c", "d"), content: "content2"},
+		{content: "content1", path: filepath.Join("a", "b")},
+		{content: "content2", path: filepath.Join("c", "d")},
 	}
 )
 
@@ -123,9 +123,7 @@ func NewServer() *Server {
 
 // Test: struct literal fields should be reordered
 func NewServerWithOptions(host string, port int) *Server {
-	return &Server{
-		Host: host, port: port,
-	}
+	return &Server{Host: host, port: port}
 }
 
 func (s *Server) AnotherPublic() {
@@ -186,9 +184,7 @@ func NewConfig() Config {
 
 // Test: struct literal reordering
 func NewConfigWithDefaults() *Config {
-	return &Config{
-		Timeout: 30, Verbose: true, debug: false, name: "default",
-	}
+	return &Config{Timeout: 30, Verbose: true, debug: false, name: "default"}
 }
 
 type Empty struct{}
@@ -231,9 +227,7 @@ type myPrivateType struct {
 }
 
 func newMyPrivateType() *myPrivateType {
-	return &myPrivateType{
-		value: 1,
-	}
+	return &myPrivateType{value: 1}
 }
 
 // Test: positional literals should be converted to keyed
@@ -266,7 +260,7 @@ func createAnonymous() interface{} {
 	return struct {
 		A string
 		B int
-	}{B: 42, A: "hello"}
+	}{A: "hello", B: 42}
 }
 
 // Test: empty literal - no change
@@ -283,36 +277,24 @@ func createExternal() *os.File {
 
 // Test: already keyed literal - no change
 func createKeyed() *PositionalTest {
-	return &PositionalTest{
-		Age: 35, City: "Boston", Name: "Alice",
-	}
+	return &PositionalTest{Age: 35, City: "Boston", Name: "Alice"}
 }
 
 // Test: struct literal field reordering
 func createMixed() *Mixed {
-	return &Mixed{
-		Address: "addr", Name: "test", age: 25, count: 1,
-	}
+	return &Mixed{Address: "addr", Name: "test", age: 25, count: 1}
 }
 
 func createPositional() *PositionalTest {
-	return &PositionalTest{
-		Age: 30, City: "NYC", Name: "John",
-	}
+	return &PositionalTest{Age: 30, City: "NYC", Name: "John"}
 }
 
 func createPositionalPartial() *PositionalTest {
-	return &PositionalTest{
-		Age: 25, Name: "Jane",
-	}
+	return &PositionalTest{Age: 25, Name: "Jane"}
 }
 
 func createWithEmbedded() *WithEmbedded {
-	return &WithEmbedded{
-		PositionalTest: PositionalTest{
-			Age: 40, City: "LA", Name: "Bob",
-		}, Extra: "extra",
-	}
+	return &WithEmbedded{PositionalTest: PositionalTest{Age: 40, City: "LA", Name: "Bob"}, Extra: "extra"}
 }
 
 // Test: blank line before comments

@@ -91,20 +91,80 @@ func reorderStructLiterals(f *dst.File, structDefs map[string][]string) {
 			return true
 		}
 
-		typeName := extractTypeName(cl.Type)
-		if typeName == "" {
-			return true
-		}
+		// Process this literal and all nested children for reordering
+		reorderCompositeLitRecursive(cl, nil, structDefs)
 
-		fieldOrder, exists := structDefs[typeName]
-		if !exists {
-			return true
-		}
-
-		reorderCompositeLitFields(cl, fieldOrder)
-
-		return true
+		// Don't let dst.Inspect descend into children - we handle them
+		return false
 	})
+}
+
+func reorderCompositeLitRecursive(cl *dst.CompositeLit, inheritedFieldOrder []string, structDefs map[string][]string) {
+	// Determine field order for THIS literal
+	fieldOrder := resolveSortedFieldOrder(cl.Type, inheritedFieldOrder, structDefs)
+
+	// Reorder if we know the field order
+	if len(fieldOrder) > 0 {
+		reorderCompositeLitFields(cl, fieldOrder)
+	}
+
+	// Determine field order to pass to children (from element type)
+	childFieldOrder := getElementSortedFieldOrder(cl.Type, structDefs)
+
+	// Process all child elements
+	for _, elt := range cl.Elts {
+		reorderElementRecursive(elt, childFieldOrder, structDefs)
+	}
+}
+
+func reorderElementRecursive(elt dst.Expr, inheritedFieldOrder []string, structDefs map[string][]string) {
+	switch e := elt.(type) {
+	case *dst.CompositeLit:
+		reorderCompositeLitRecursive(e, inheritedFieldOrder, structDefs)
+	case *dst.KeyValueExpr:
+		// Value might be a composite literal (map values, struct fields)
+		if child, ok := e.Value.(*dst.CompositeLit); ok {
+			reorderCompositeLitRecursive(child, inheritedFieldOrder, structDefs)
+		}
+	}
+}
+
+func resolveSortedFieldOrder(t dst.Expr, inherited []string, structDefs map[string][]string) []string {
+	if t == nil {
+		return inherited
+	}
+
+	// Anonymous struct type - get field names from the (now sorted) struct
+	if st, ok := t.(*dst.StructType); ok {
+		return getFieldNamesFromStructType(st)
+	}
+
+	// Named type
+	if typeName := extractTypeName(t); typeName != "" {
+		if order, exists := structDefs[typeName]; exists {
+			return order
+		}
+	}
+
+	return nil
+}
+
+func getElementSortedFieldOrder(t dst.Expr, structDefs map[string][]string) []string {
+	if t == nil {
+		return nil
+	}
+
+	// Slice/array: []T or [N]T
+	if at, ok := t.(*dst.ArrayType); ok {
+		return resolveSortedFieldOrder(at.Elt, nil, structDefs)
+	}
+
+	// Map: map[K]V - return value type's field order
+	if mt, ok := t.(*dst.MapType); ok {
+		return resolveSortedFieldOrder(mt.Value, nil, structDefs)
+	}
+
+	return nil
 }
 
 func assembleFieldList(embedded, public, private []*dst.Field) []*dst.Field {
@@ -188,6 +248,14 @@ func reorderCompositeLitFields(cl *dst.CompositeLit, fieldOrder []string) {
 		return
 	}
 
+	// Capture the original first element's decoration
+	var originalFirstBefore dst.SpaceType
+	if len(cl.Elts) > 0 {
+		if kv, ok := cl.Elts[0].(*dst.KeyValueExpr); ok {
+			originalFirstBefore = kv.Decs.Before
+		}
+	}
+
 	var newElts []dst.Expr
 	for _, fieldName := range fieldOrder {
 		if kv, exists := keyedElts[fieldName]; exists {
@@ -202,10 +270,11 @@ func reorderCompositeLitFields(cl *dst.CompositeLit, fieldOrder []string) {
 
 	newElts = append(newElts, nonKeyed...)
 
+	// Preserve original decoration style
 	for i, elt := range newElts {
 		if kv, ok := elt.(*dst.KeyValueExpr); ok {
 			if i == 0 {
-				kv.Decs.Before = dst.NewLine
+				kv.Decs.Before = originalFirstBefore
 			} else {
 				kv.Decs.Before = dst.None
 			}
