@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.2](https://github.com/werf/wormatter/compare/v1.3.1...v1.3.2) (2026-01-27)
+
+
+### Bug Fixes
+
+* -v version output incorrect ([ec00ec5](https://github.com/werf/wormatter/commit/ec00ec557e48d2f11716786b276a638d79f8c2a4))
+* no ordering for anonymous struct literals ([b378ad7](https://github.com/werf/wormatter/commit/b378ad7c372338ba4145bb4aaaf5253db70b967e))
+
 ## [1.3.1](https://github.com/werf/wormatter/compare/v1.3.0...v1.3.1) (2026-01-27)
 
 
