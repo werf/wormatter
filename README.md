@@ -276,6 +276,18 @@ cfg := &Config{Name: "app", Timeout: 30, debug: true}
 
 </details>
 
+**Positional literals** are automatically converted to keyed literals:
+
+```go
+// Before — positional
+p := Person{"John", 30}
+
+// After — converted to keyed, then sorted
+p := Person{Age: 30, Name: "John"}
+```
+
+This conversion only applies to structs defined in the same file. External struct literals are left unchanged.
+
 ---
 
 ### Functions

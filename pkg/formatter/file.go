@@ -55,9 +55,11 @@ func FormatFile(filePath string, opts Options) error {
 		return nil
 	}
 
-	structDefs := collectStructDefinitions(f)
+	originalFieldOrder := collectOriginalFieldOrder(f)
+	convertPositionalToKeyed(f, originalFieldOrder)
 	reorderStructFields(f)
-	reorderStructLiterals(f, structDefs)
+	sortedFieldOrder := collectStructDefinitions(f)
+	reorderStructLiterals(f, sortedFieldOrder)
 	f.Decls = reorderDeclarations(f)
 	normalizeSpacing(f)
 	expandOneLineFunctions(f)

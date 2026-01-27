@@ -37,6 +37,29 @@ func collectStructDefinitions(f *dst.File) map[string][]string {
 	return structDefs
 }
 
+// collectOriginalFieldOrder collects the original (unsorted) field order for each struct.
+// This is needed for converting positional literals to keyed literals.
+func collectOriginalFieldOrder(f *dst.File) map[string][]string {
+	structDefs := make(map[string][]string)
+
+	dst.Inspect(f, func(n dst.Node) bool {
+		ts, ok := n.(*dst.TypeSpec)
+		if !ok {
+			return true
+		}
+		st, ok := ts.Type.(*dst.StructType)
+		if !ok {
+			return true
+		}
+
+		structDefs[ts.Name.Name] = getFieldNamesFromStructType(st)
+
+		return true
+	})
+
+	return structDefs
+}
+
 func reorderFields(st *dst.StructType) {
 	if st.Fields == nil || len(st.Fields.List) == 0 {
 		return
@@ -190,4 +213,96 @@ func reorderCompositeLitFields(cl *dst.CompositeLit, fieldOrder []string) {
 	}
 
 	cl.Elts = newElts
+}
+
+func isPositionalLiteral(cl *dst.CompositeLit) bool {
+	if len(cl.Elts) == 0 {
+		return false
+	}
+
+	for _, elt := range cl.Elts {
+		if _, ok := elt.(*dst.KeyValueExpr); ok {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getFieldNamesFromStructType(st *dst.StructType) []string {
+	if st == nil || st.Fields == nil {
+		return nil
+	}
+
+	var names []string
+	for _, field := range st.Fields.List {
+		if len(field.Names) == 0 {
+			// Embedded field - use type name
+			names = append(names, getFieldTypeName(field))
+		} else {
+			// Named field(s)
+			for _, name := range field.Names {
+				names = append(names, name.Name)
+			}
+		}
+	}
+
+	return names
+}
+
+func convertToKeyedLiteral(cl *dst.CompositeLit, fieldNames []string) {
+	if len(fieldNames) == 0 || len(cl.Elts) == 0 {
+		return
+	}
+
+	newElts := make([]dst.Expr, 0, len(cl.Elts))
+	for i, elt := range cl.Elts {
+		if i >= len(fieldNames) {
+			break
+		}
+
+		kv := &dst.KeyValueExpr{
+			Key:   dst.NewIdent(fieldNames[i]),
+			Value: elt,
+		}
+		newElts = append(newElts, kv)
+	}
+
+	cl.Elts = newElts
+}
+
+func convertPositionalToKeyed(f *dst.File, structDefs map[string][]string) {
+	dst.Inspect(f, func(n dst.Node) bool {
+		cl, ok := n.(*dst.CompositeLit)
+		if !ok {
+			return true
+		}
+
+		if !isPositionalLiteral(cl) {
+			return true
+		}
+
+		// Handle anonymous struct type
+		if st, ok := cl.Type.(*dst.StructType); ok {
+			fieldNames := getFieldNamesFromStructType(st)
+			convertToKeyedLiteral(cl, fieldNames)
+			return true
+		}
+
+		// Handle named struct type
+		typeName := extractTypeName(cl.Type)
+		if typeName == "" {
+			return true
+		}
+
+		fieldNames, exists := structDefs[typeName]
+		if !exists {
+			// Type not in this file - leave untouched
+			return true
+		}
+
+		convertToKeyedLiteral(cl, fieldNames)
+
+		return true
+	})
 }

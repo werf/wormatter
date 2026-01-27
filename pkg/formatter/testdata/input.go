@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -286,4 +287,54 @@ type myPrivateType struct {
 
 func newMyPrivateType() *myPrivateType {
 	return &myPrivateType{value: 1}
+}
+
+// Test: positional literals should be converted to keyed
+type PositionalTest struct {
+	Name string
+	Age  int
+	City string
+}
+
+func createPositional() *PositionalTest {
+	return &PositionalTest{"John", 30, "NYC"}
+}
+
+func createPositionalPartial() *PositionalTest {
+	return &PositionalTest{"Jane", 25}
+}
+
+// Test: anonymous struct with positional literal
+func createAnonymous() interface{} {
+	return struct {
+		B int
+		A string
+	}{42, "hello"}
+}
+
+// Test: embedded fields in positional literal
+type WithEmbedded struct {
+	PositionalTest
+	Extra string
+}
+
+func createWithEmbedded() *WithEmbedded {
+	return &WithEmbedded{PositionalTest{"Bob", 40, "LA"}, "extra"}
+}
+
+// Test: external struct literal should NOT be touched
+func createExternal() *os.File {
+	// This uses positional but type is external - leave untouched
+	// (os.File doesn't actually support this, so use a keyed example)
+	return nil
+}
+
+// Test: already keyed literal - no change
+func createKeyed() *PositionalTest {
+	return &PositionalTest{Name: "Alice", Age: 35, City: "Boston"}
+}
+
+// Test: empty literal - no change
+func createEmpty() *PositionalTest {
+	return &PositionalTest{}
 }

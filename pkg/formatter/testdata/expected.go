@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -212,16 +213,77 @@ func newMyPrivateType() *myPrivateType {
 	}
 }
 
+// Test: positional literals should be converted to keyed
+type PositionalTest struct {
+	Age  int
+	City string
+	Name string
+}
+
+// Test: embedded fields in positional literal
+type WithEmbedded struct {
+	PositionalTest
+
+	Extra string
+}
+
 func HelperUpper() {}
 
 func ProcessDataPublic(data string) string {
 	return strings.ToLower(data)
 }
 
+// Test: anonymous struct with positional literal
+func createAnonymous() interface{} {
+	return struct {
+		A string
+		B int
+	}{B: 42, A: "hello"}
+}
+
+// Test: empty literal - no change
+func createEmpty() *PositionalTest {
+	return &PositionalTest{}
+}
+
+// Test: external struct literal should NOT be touched
+func createExternal() *os.File {
+	// This uses positional but type is external - leave untouched
+	// (os.File doesn't actually support this, so use a keyed example)
+	return nil
+}
+
+// Test: already keyed literal - no change
+func createKeyed() *PositionalTest {
+	return &PositionalTest{
+		Age: 35, City: "Boston", Name: "Alice",
+	}
+}
+
 // Test: struct literal field reordering
 func createMixed() *Mixed {
 	return &Mixed{
 		Address: "addr", Name: "test", age: 25, count: 1,
+	}
+}
+
+func createPositional() *PositionalTest {
+	return &PositionalTest{
+		Age: 30, City: "NYC", Name: "John",
+	}
+}
+
+func createPositionalPartial() *PositionalTest {
+	return &PositionalTest{
+		Age: 25, Name: "Jane",
+	}
+}
+
+func createWithEmbedded() *WithEmbedded {
+	return &WithEmbedded{
+		PositionalTest: PositionalTest{
+			Age: 40, City: "LA", Name: "Bob",
+		}, Extra: "extra",
 	}
 }
 
