@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/werf/wormatter/compare/v1.3.0...v1.3.1) (2026-01-27)
+
+
+### Bug Fixes
+
+* properly expand value to key-value fields in slices or maps of structs ([8893c20](https://github.com/werf/wormatter/commit/8893c2027ae5b033ba5dcde4318b85fbbf3aac71))
+
 ## [1.3.0](https://github.com/werf/wormatter/compare/v1.2.0...v1.3.0) (2026-01-27)
 
 
