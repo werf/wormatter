@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -47,11 +48,18 @@ var (
 	DefaultStatus StatusCode = "default"
 	ErrorStatus   StatusCode = "error"
 
-	globalA      = 5
-	globalB      = 3
-	globalMiddle = 7
-	globalZ      = 10
-	singleConst  = 1
+	globalA        = 5
+	globalB        = 3
+	globalMiddle   = 7
+	globalZ        = 10
+	singleConst    = 1
+	sliceOfStructs = []struct {
+		content string
+		path    string
+	}{
+		{path: filepath.Join("a", "b"), content: "content1"},
+		{path: filepath.Join("c", "d"), content: "content2"},
+	}
 )
 
 // Test: type declared in wrong place

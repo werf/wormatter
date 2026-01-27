@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -339,6 +340,15 @@ func createKeyed() *PositionalTest {
 // Test: empty literal - no change
 func createEmpty() *PositionalTest {
 	return &PositionalTest{}
+}
+
+// Test: slice of anonymous structs with positional literals
+var sliceOfStructs = []struct {
+	path    string
+	content string
+}{
+	{filepath.Join("a", "b"), "content1"},
+	{filepath.Join("c", "d"), "content2"},
 }
 
 // Test: multi-line func signature should collapse to single line

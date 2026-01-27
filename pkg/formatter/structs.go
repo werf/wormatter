@@ -278,31 +278,78 @@ func convertPositionalToKeyed(f *dst.File, structDefs map[string][]string) {
 			return true
 		}
 
-		if !isPositionalLiteral(cl) {
-			return true
-		}
+		// Process this literal and all nested children
+		processCompositeLit(cl, nil, structDefs)
 
-		// Handle anonymous struct type
-		if st, ok := cl.Type.(*dst.StructType); ok {
-			fieldNames := getFieldNamesFromStructType(st)
-			convertToKeyedLiteral(cl, fieldNames)
-			return true
-		}
-
-		// Handle named struct type
-		typeName := extractTypeName(cl.Type)
-		if typeName == "" {
-			return true
-		}
-
-		fieldNames, exists := structDefs[typeName]
-		if !exists {
-			// Type not in this file - leave untouched
-			return true
-		}
-
-		convertToKeyedLiteral(cl, fieldNames)
-
-		return true
+		// Don't let dst.Inspect descend into children - we handle them
+		return false
 	})
+}
+
+func processCompositeLit(cl *dst.CompositeLit, inheritedFieldNames []string, structDefs map[string][]string) {
+	// Determine field names for THIS literal
+	fieldNames := resolveFieldNames(cl.Type, inheritedFieldNames, structDefs)
+
+	// Convert if positional and we know the field names
+	if len(fieldNames) > 0 && isPositionalLiteral(cl) {
+		convertToKeyedLiteral(cl, fieldNames)
+	}
+
+	// Determine field names to pass to children (from element type)
+	childFieldNames := getElementFieldNames(cl.Type, structDefs)
+
+	// Process all child elements
+	for _, elt := range cl.Elts {
+		processElement(elt, childFieldNames, structDefs)
+	}
+}
+
+func processElement(elt dst.Expr, inheritedFieldNames []string, structDefs map[string][]string) {
+	switch e := elt.(type) {
+	case *dst.CompositeLit:
+		processCompositeLit(e, inheritedFieldNames, structDefs)
+	case *dst.KeyValueExpr:
+		// Value might be a composite literal (map values, struct fields)
+		if child, ok := e.Value.(*dst.CompositeLit); ok {
+			processCompositeLit(child, inheritedFieldNames, structDefs)
+		}
+	}
+}
+
+func resolveFieldNames(t dst.Expr, inherited []string, structDefs map[string][]string) []string {
+	if t == nil {
+		return inherited
+	}
+
+	// Anonymous struct type
+	if st, ok := t.(*dst.StructType); ok {
+		return getFieldNamesFromStructType(st)
+	}
+
+	// Named type
+	if typeName := extractTypeName(t); typeName != "" {
+		if names, exists := structDefs[typeName]; exists {
+			return names
+		}
+	}
+
+	return nil
+}
+
+func getElementFieldNames(t dst.Expr, structDefs map[string][]string) []string {
+	if t == nil {
+		return nil
+	}
+
+	// Slice/array: []T or [N]T
+	if at, ok := t.(*dst.ArrayType); ok {
+		return resolveFieldNames(at.Elt, nil, structDefs)
+	}
+
+	// Map: map[K]V - return value type's field names
+	if mt, ok := t.(*dst.MapType); ok {
+		return resolveFieldNames(mt.Value, nil, structDefs)
+	}
+
+	return nil
 }
