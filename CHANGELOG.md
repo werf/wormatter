@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/werf/wormatter/compare/v1.2.0...v1.3.0) (2026-01-27)
+
+
+### Features
+
+* force function definition arguments and returns on a single line ([e4c440d](https://github.com/werf/wormatter/commit/e4c440d3db144ba47fef70730a224ad5144036b7))
+
 ## [1.2.0](https://github.com/werf/wormatter/compare/v1.1.1...v1.2.0) (2026-01-27)
 
 
