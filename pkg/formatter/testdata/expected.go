@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -66,6 +68,9 @@ type StatusCode MyString
 
 type Priority int
 
+// Test: function type should collapse
+type MultiLineHandler func(w http.ResponseWriter, r *http.Request)
+
 type Reader interface {
 	Read(p []byte) (n int, err error)
 }
@@ -76,6 +81,11 @@ type Writer interface {
 
 type Closer interface {
 	Close() error
+}
+
+// Test: interface method should collapse
+type MultiLineInterface interface {
+	Process(ctx context.Context, input Input) (Output, error)
 }
 
 type ReadWriter interface {
@@ -117,6 +127,11 @@ func (s *Server) AnotherPublic() {
 func (s *Server) PublicMethod() {}
 
 func (s *Server) handleRequest() {}
+
+// Test: multi-line method signature should collapse
+func (s *Server) multiLineMethod(ctx context.Context, input string) (string, error) {
+	return input, nil
+}
 
 // Test: method declared before its type
 func (s *Server) privateMethod() {
@@ -226,6 +241,11 @@ type WithEmbedded struct {
 
 	Extra string
 }
+
+// Types for interface test
+type Input struct{}
+
+type Output struct{}
 
 func HelperUpper() {}
 
@@ -358,6 +378,16 @@ func functionWithTypeSwitch(x interface{}) string {
 // Test: functions should be reordered (main last, init first after imports)
 func helperLower() {
 	fmt.Println("helper")
+}
+
+// Test: multi-line func signature should collapse to single line
+func multiLineFunc(a int, b string, c bool) error {
+	return nil
+}
+
+// Test: multi-line return values should collapse
+func multiLineReturns() (result string, err error) {
+	return "", nil
 }
 
 func processData(data string) string {

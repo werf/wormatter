@@ -55,6 +55,7 @@ func FormatFile(filePath string, opts Options) error {
 		return nil
 	}
 
+	collapseFuncSignatures(f)
 	originalFieldOrder := collectOriginalFieldOrder(f)
 	convertPositionalToKeyed(f, originalFieldOrder)
 	reorderStructFields(f)
