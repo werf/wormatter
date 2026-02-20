@@ -201,25 +201,24 @@ func assembleFieldList(embedded, public, private []*dst.Field) []*dst.Field {
 
 	for _, f := range embedded {
 		f.Decs.Before = dst.NewLine
+		f.Decs.After = dst.None
 		result = append(result, f)
 	}
 
-	if len(public) > 0 && len(embedded) > 0 {
-		public[0].Decs.Before = dst.EmptyLine
-	}
-	for _, f := range public {
-		if f.Decs.Before != dst.EmptyLine {
-			f.Decs.Before = dst.NewLine
+	for i, f := range public {
+		f.Decs.Before = dst.NewLine
+		f.Decs.After = dst.None
+		if i == 0 && len(embedded) > 0 {
+			f.Decs.Before = dst.EmptyLine
 		}
 		result = append(result, f)
 	}
 
-	if len(private) > 0 && (len(embedded) > 0 || len(public) > 0) {
-		private[0].Decs.Before = dst.EmptyLine
-	}
-	for _, f := range private {
-		if f.Decs.Before != dst.EmptyLine {
-			f.Decs.Before = dst.NewLine
+	for i, f := range private {
+		f.Decs.Before = dst.NewLine
+		f.Decs.After = dst.None
+		if i == 0 && (len(embedded) > 0 || len(public) > 0) {
+			f.Decs.Before = dst.EmptyLine
 		}
 		result = append(result, f)
 	}
