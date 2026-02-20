@@ -17,6 +17,10 @@ func TestAI_CommentPreservationDuringMerge(t *testing.T) {
 	runFormatterTest(t, "comment_loss")
 }
 
+func TestAI_InlineCommentAttachmentDuringReorder(t *testing.T) {
+	runFormatterTest(t, "inline_comments")
+}
+
 func runFormatterTest(t *testing.T, name string) {
 	t.Helper()
 
