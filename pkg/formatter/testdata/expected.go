@@ -25,8 +25,8 @@ const (
 	// Test: consts should be merged and sorted
 	ConstZ = "z"
 
-	StatusError   StatusCode = "error"
 	StatusOK      StatusCode = "ok"
+	StatusError   StatusCode = "error"
 	StatusPending StatusCode = "pending"
 
 	constPrivate = "private"
