@@ -48,10 +48,10 @@ var (
 	DefaultStatus StatusCode = "default"
 	ErrorStatus   StatusCode = "error"
 
-	globalA        = 5
-	globalB        = 3
-	globalMiddle   = 7
 	globalZ        = 10
+	globalA        = 5
+	globalMiddle   = 7
+	globalB        = 3
 	singleConst    = 1
 	sliceOfStructs = []struct {
 		content string

@@ -49,6 +49,12 @@ func sortSpecsByExportabilityThenName(specs []dst.Spec) {
 	})
 }
 
+func sortVarSpecsByExportability(specs []dst.Spec) {
+	sort.SliceStable(specs, func(i, j int) bool {
+		return getExportGroup(getSpecFirstName(specs[i])) < getExportGroup(getSpecFirstName(specs[j]))
+	})
+}
+
 func splitAndGroupTypeDecls(typeDecls []*dst.GenDecl) []dst.Decl {
 	var simpleTypes, funcInterfaces, nonFuncInterfaces, structs []dst.Decl
 
