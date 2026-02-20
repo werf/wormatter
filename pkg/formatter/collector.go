@@ -107,7 +107,7 @@ func (c *declCollector) collectTypeNames(f *dst.File) {
 
 func (c *declCollector) sort() {
 	sortSpecsByExportabilityThenName(c.constSpecs)
-	sortSpecsByExportabilityThenName(c.varSpecs)
+	sortVarSpecsByExportability(c.varSpecs)
 
 	for typeName := range c.constructors {
 		sortFuncDeclsByName(c.constructors[typeName])

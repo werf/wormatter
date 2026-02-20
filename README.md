@@ -117,7 +117,9 @@ func main() {}
 | 2 | Public (uppercase) | By custom type |
 | 3 | Private (lowercase) | By custom type |
 
-**Within each group:** sorted alphabetically, no empty lines.
+**Within each group:**
+- **Constants:** sorted alphabetically, no empty lines.
+- **Variables:** original order preserved (to avoid breaking initialization dependencies), no empty lines.
 
 <details>
 <summary>Example</summary>
