@@ -243,7 +243,7 @@ Fields in **named type declarations** (`type Foo struct{...}`) are grouped (sepa
 | 2 | Public | Alphabetically |
 | 3 | Private | Alphabetically |
 
-Anonymous structs (table tests, inline struct fields, composite literal types) are **not** reordered.
+Anonymous structs (table tests, inline struct fields, composite literal types) are **not** reordered. Structs with encoding-related struct tags (`json`, `yaml`, `xml`, `toml`, `protobuf`) are also **not** reordered, to preserve wire format compatibility.
 
 **Struct literals** with named fields are reordered to match the struct definition.
 
