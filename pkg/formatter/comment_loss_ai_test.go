@@ -39,6 +39,10 @@ func TestAI_NormalDocCommentNoError(t *testing.T) {
 	require.NoError(t, formatter.FormatFile(actualPath, formatter.Options{}))
 }
 
+func TestAI_NoSpuriousBlankLinesInStructs(t *testing.T) {
+	runFormatterTest(t, "struct_spacing")
+}
+
 func TestAI_EncodingTaggedStructFieldsNotReordered(t *testing.T) {
 	runFormatterTest(t, "encoding_tags")
 }
