@@ -38,6 +38,10 @@ wormatter --exclude "*_test.go" .
 wormatter --exclude "*.pb.go" --exclude "vendor/*" .
 ```
 
+### Free-Floating Comments
+
+Files with free-floating comments (section headers separated from code by a blank line) on `var` or `const` declarations will produce an error, since these comments cannot be safely preserved during declaration merging and reordering. Normal doc comments (directly attached to the declaration) are preserved correctly.
+
 ### Generated Files
 
 Files starting with any of these comments are automatically skipped:

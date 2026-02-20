@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"mvdan.cc/gofumpt/format"
 )
@@ -53,6 +54,10 @@ func FormatFile(filePath string, opts Options) error {
 
 	if isGeneratedFile(f) {
 		return nil
+	}
+
+	if err := checkFreeFloatingComments(f, filePath); err != nil {
+		return err
 	}
 
 	collapseFuncSignatures(f)
@@ -99,6 +104,20 @@ func FormatFile(filePath string, opts Options) error {
 	}
 
 	return os.WriteFile(filePath, formatted, 0o644)
+}
+
+func checkFreeFloatingComments(f *dst.File, filePath string) error {
+	for _, decl := range f.Decls {
+		gd, ok := decl.(*dst.GenDecl)
+		if !ok || (gd.Tok != token.CONST && gd.Tok != token.VAR) {
+			continue
+		}
+		if hasFreeFloatingComment(gd.Decs.Start) {
+			return fmt.Errorf("%s: file has free-floating comments, cannot safely reorder declarations", filePath)
+		}
+	}
+
+	return nil
 }
 
 func matchesAnyPattern(path string, patterns []string) bool {

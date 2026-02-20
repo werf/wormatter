@@ -178,6 +178,10 @@ func isBlankVarSpec(spec dst.Spec) bool {
 	})
 }
 
+func hasFreeFloatingComment(decs dst.Decorations) bool {
+	return len(decs) > 0 && decs[len(decs)-1] == "\n"
+}
+
 func isExported(name string) bool {
 	return len(name) > 0 && unicode.IsUpper(rune(name[0]))
 }
