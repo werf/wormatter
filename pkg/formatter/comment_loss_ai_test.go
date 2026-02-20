@@ -39,6 +39,10 @@ func TestAI_NormalDocCommentNoError(t *testing.T) {
 	require.NoError(t, formatter.FormatFile(actualPath, formatter.Options{}))
 }
 
+func TestAI_TypedConstsPreserveOrder(t *testing.T) {
+	runFormatterTest(t, "typed_consts")
+}
+
 func TestAI_NoSpuriousBlankLinesInStructs(t *testing.T) {
 	runFormatterTest(t, "struct_spacing")
 }

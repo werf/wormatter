@@ -7,10 +7,11 @@ const (
 	SingleWithComment = "single"  // single inline comment
 	ZetaConst         = "zeta"    // zeta inline comment
 
-	// doc comment for TypedA
-	TypedA MyType = "a" // typed-a inline
 	// doc comment for TypedZ
 	TypedZ MyType = "z"
+	// doc comment for TypedA
+	// typed-a inline
+	TypedA MyType = "a"
 )
 
 var (

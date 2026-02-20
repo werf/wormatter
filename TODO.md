@@ -6,46 +6,37 @@ Issues discovered by formatting the [nelm](https://github.com/werf/nelm) codebas
 
 ## Critical
 
-### 1. Variable reordering breaks initialization dependencies (`pkg/featgate/feat.go`)
-**Issue**: `FeatGates = []*FeatGate{}` moved to end of `var` block, overwriting populated slice (filled by `NewFeatGate` calls) with empty one.
-**Fix**: Don't sort var specs by name at all. Only group by exportability (`_` first, exported, unexported) and preserve original relative order within each group. Dependency analysis via AST is unreliable (can't detect indirect dependencies through function calls), and alphabetical sorting can break initialization order.
+### ~~1. Variable reordering breaks initialization dependencies~~ → Fixed
+**Fix applied**: Var specs are now grouped by exportability only (`_` first, exported, unexported) and preserve original relative order within each group. `sortVarSpecsByExportability` replaces `sortSpecsByExportabilityThenName` for vars.
 
-### 2. Comment loss (`ChartTSEntryPoints`) (`pkg/common/common.go`)
-**Issue**: Comment `// ChartTSEntryPoints defines supported TypeScript/JavaScript entry points (in priority order).` lost during var merge. Variable `ChartTSEntryPoints` was moved to a merged block, but the comment was detached.
-**Fix**: When extracting specs from `GenDecl` in `collectGenDecl` (both `token.CONST` and `token.VAR` cases), transfer `GenDecl.Decs.Start` (doc comments) to the first `ValueSpec.Decs.Start` before discarding the `GenDecl`. This ensures comments travel with the spec during merge/sort. For multi-spec blocks, only transfer to the first spec (inner comments are already on the spec).
+### ~~2. Comment loss (`ChartTSEntryPoints`)~~ → Fixed
+**Fix applied**: `transferGenDeclDocToFirstSpec` transfers `GenDecl.Decs.Start` to the first `ValueSpec.Decs.Start` in `collectGenDecl` for both `token.CONST` and `token.VAR` cases.
 
-### 2a. Verify inline comment attachment during const reordering
-**Issue**: Wormatter reorders `const` specs. We need tests ensuring inline comments remain attached to the correct spec after any reordering.
-**Evidence**: `internal/plan/release_info.go` shows const spec reordering; comments still look correct there, but this should be covered by tests to prevent regressions.
-**Fix**: No code change needed — DST decorations on `ValueSpec` (including inline `End` comments) travel with the node during `sort.SliceStable`. Add regression tests to verify inline comments remain attached to the correct spec after reordering.
+### ~~2a. Verify inline comment attachment during const reordering~~ → Fixed
+**Fix applied**: Added regression tests. Also fixed end-comment transfer: `GenDecl.Decs.End` (inline comments on single-spec declarations) is now transferred to the spec's `Decs.End`. DST limitation: the last spec's `End` comment in a block is moved to `Start` via `fixLastSpecEndComment` to prevent misplacement.
 
-### 2b. Verify free-floating comment handling
-**Issue**: Need to verify that free-floating comments (not clearly attached to any decl/spec/block) are preserved and remain correctly positioned when wormatter merges/reorders declarations.
-**Fix**: Detect free-floating comments (section headers separated from code by a blank line) before reordering. In DST, these are identifiable by a trailing `"\n"` entry in `Decs.Start`. If any top-level declaration has such a detached comment, return an error for that file ("file has free-floating comments, cannot safely reorder declarations"). Add tests for this detection and for normal doc comments (no trailing `"\n"`) being preserved correctly.
+### ~~2b. Verify free-floating comment handling~~ → Fixed
+**Fix applied**: `checkFreeFloatingComments` detects free-floating comments (trailing `"\n"` in `Decs.Start`) on var/const declarations before reordering and returns an error.
 
 ---
 
 ## Major
 
-### 3. Test table struct field reordering buries `name` field
-**Issue**: `name` field moved to end of test structs (alphabetical sort), making table tests unreadable.
-**Fix**: Only reorder struct fields in named type declarations (`type Foo struct{...}`). Change `reorderStructFields` to look for `*dst.TypeSpec` nodes and reorder the `*dst.StructType` inside them, instead of targeting all `*dst.StructType` nodes indiscriminately. This skips anonymous structs (table tests, inline struct fields, composite literal types).
+### ~~3. Test table struct field reordering buries `name` field~~ → Fixed
+**Fix applied**: `reorderStructFields` now inspects `*dst.TypeSpec` nodes and reorders the `*dst.StructType` inside them, skipping anonymous structs (table tests, inline struct fields, composite literal types).
 
-### 4. JSON-serialized struct field reordering changes wire format
-**Issue**: Struct field order changes JSON output order in Go; wormatter reorders json-tagged fields in exported types (e.g. `internal/plan/operation.go`, `internal/plan/plan.go`).
-**Fix**: If any field in a struct has an encoding-related struct tag (`json`, `yaml`, `xml`, `toml`, `protobuf`), skip field reordering for that entire struct (preserve original field order). Don't mix sorted and unsorted fields — it creates confusing output. Non-encoding tags (`validate`, `db`, etc.) don't trigger the skip.
+### ~~4. JSON-serialized struct field reordering changes wire format~~ → Fixed
+**Fix applied**: `hasEncodingTags` checks if any field has `json`, `yaml`, `xml`, `toml`, or `protobuf` struct tags. If so, `reorderStructFields` skips that struct entirely.
 
 ---
 
 ## Minor
 
-### 5. Spurious blank lines in structs
-**Issue**: Blank lines inserted between fields in both public and private structs (e.g., `NoActivityTimeout` / `Ownership` in public structs; `logStore` / `maxLogEventTableWidth` in private `tablesBuilder` struct in `internal/track/progress_tables.go`; `discoveryClient` / `dynamicClient` in private `KubeClient` struct in `internal/kube/client_kube.go`).
-**Fix**: The grouping logic in `assembleFieldList` is correct (only sets `EmptyLine` at group boundaries), but the loops preserve stale `EmptyLine` decorations from the original source via a `if f.Decs.Before != dst.EmptyLine` guard. Fix: unconditionally set `Decs.Before = dst.NewLine` for all fields within a group, then set `EmptyLine` only on the first field of each new group.
+### ~~5. Spurious blank lines in structs~~ → Fixed
+**Fix applied**: `assembleFieldList` now unconditionally sets `Decs.Before = dst.NewLine` and `Decs.After = dst.None` for all fields, then sets `EmptyLine` only on the first field of each new group boundary.
 
-### 6. Ordered typed string constants reordered
-**Issue**: Typed string constant blocks that are intentionally ordered get reordered alphabetically (e.g. stage ordering in `pkg/common/common.go`, and previously observed `ReleaseType` constants).
-**Fix**: Create a const-specific sort function (separate from vars). Sort const specs by: exportability → type name → name **only for untyped consts** (empty type). Typed consts (`Stage`, `ReleaseType`, etc.) preserve their original relative order within the same type group — `sort.SliceStable` handles this naturally by returning `false` for same-type comparisons. This keeps intentional orderings (pipeline stages, priorities) intact while still alphabetizing untyped consts.
+### ~~6. Ordered typed string constants reordered~~ → Fixed
+**Fix applied**: `sortConstSpecsByExportabilityThenName` sorts by exportability → type name → name only for untyped consts. Typed consts preserve their original relative order within the same type group via `sort.SliceStable`.
 
 ### 7. Table test cases reordered in slice literals
 **Issue**: Elements in table-driven test case slices appear to be reordered (e.g. `internal/plan/plan_build_test.go`, where `{ name: `...`, input: ..., expect: ... }` cases moved around). This is noisy at best and can be semantically risky if test cases are order-dependent.

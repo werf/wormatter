@@ -122,8 +122,8 @@ func main() {}
 | 3 | Private (lowercase) | By custom type |
 
 **Within each group:**
-- **Constants:** sorted alphabetically, no empty lines.
-- **Variables:** original order preserved (to avoid breaking initialization dependencies), no empty lines.
+- **Constants:** untyped consts sorted alphabetically; typed consts (e.g. `Stage`, `StatusCode`) preserve their original order to keep intentional orderings intact.
+- **Variables:** original order preserved (to avoid breaking initialization dependencies).
 
 <details>
 <summary>Example</summary>
