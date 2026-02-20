@@ -1,7 +1,9 @@
 package formatter
 
 import (
+	"reflect"
 	"sort"
+	"strings"
 
 	"github.com/dave/dst"
 )
@@ -12,12 +14,35 @@ func reorderStructFields(f *dst.File) {
 		if !ok {
 			return true
 		}
-		if st, ok := ts.Type.(*dst.StructType); ok {
-			reorderFields(st)
+		st, ok := ts.Type.(*dst.StructType)
+		if !ok || hasEncodingTags(st) {
+			return true
 		}
+		reorderFields(st)
 
 		return true
 	})
+}
+
+var encodingTagKeys = []string{"json", "yaml", "xml", "toml", "protobuf"}
+
+func hasEncodingTags(st *dst.StructType) bool {
+	if st.Fields == nil {
+		return false
+	}
+	for _, field := range st.Fields.List {
+		if field.Tag == nil {
+			continue
+		}
+		tag := reflect.StructTag(strings.Trim(field.Tag.Value, "`"))
+		for _, key := range encodingTagKeys {
+			if _, ok := tag.Lookup(key); ok {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func collectStructDefinitions(f *dst.File) map[string][]string {
