@@ -22,7 +22,8 @@ const (
 	ConstA      = "a"
 	ConstB      = "b"
 	ConstMiddle = "m"
-	ConstZ      = "z"
+	// Test: consts should be merged and sorted
+	ConstZ = "z"
 
 	StatusError   StatusCode = "error"
 	StatusOK      StatusCode = "ok"
@@ -39,20 +40,24 @@ const (
 )
 
 var (
+	// Test: blank var interface check
 	_ fmt.Stringer = (*Server)(nil)
 	_ Reader       = (*Server)(nil)
 	_ Writer       = (*Client)(nil)
 
 	GlobalPublic = "public"
 
+	// Test: custom type grouping in var block
 	DefaultStatus StatusCode = "default"
 	ErrorStatus   StatusCode = "error"
 
-	globalZ        = 10
-	globalA        = 5
-	globalMiddle   = 7
-	globalB        = 3
-	singleConst    = 1
+	// Test: vars should be merged and sorted
+	globalZ      = 10
+	globalA      = 5
+	globalMiddle = 7
+	globalB      = 3
+	singleConst  = 1
+	// Test: slice of anonymous structs with positional literals
 	sliceOfStructs = []struct {
 		content string
 		path    string
