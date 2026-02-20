@@ -39,6 +39,10 @@ func TestAI_NormalDocCommentNoError(t *testing.T) {
 	require.NoError(t, formatter.FormatFile(actualPath, formatter.Options{}))
 }
 
+func TestAI_AnonymousStructFieldsNotReordered(t *testing.T) {
+	runFormatterTest(t, "anon_struct")
+}
+
 func TestAI_InlineCommentAttachmentDuringReorder(t *testing.T) {
 	runFormatterTest(t, "inline_comments")
 }
