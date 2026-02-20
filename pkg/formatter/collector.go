@@ -76,9 +76,11 @@ func (c *declCollector) collectGenDecl(d *dst.GenDecl) {
 		if hasIota(d) {
 			c.iotaConstDecls = append(c.iotaConstDecls, d)
 		} else {
+			transferGenDeclDecsToSpecs(d)
 			c.constSpecs = append(c.constSpecs, d.Specs...)
 		}
 	case token.VAR:
+		transferGenDeclDecsToSpecs(d)
 		for _, spec := range d.Specs {
 			if isBlankVarSpec(spec) {
 				c.blankVarSpecs = append(c.blankVarSpecs, spec)
@@ -88,6 +90,18 @@ func (c *declCollector) collectGenDecl(d *dst.GenDecl) {
 		}
 	case token.TYPE:
 		c.typeDecls = append(c.typeDecls, d)
+	}
+}
+
+func transferGenDeclDecsToSpecs(d *dst.GenDecl) {
+	if len(d.Specs) == 0 {
+		return
+	}
+	if first, ok := d.Specs[0].(*dst.ValueSpec); ok && len(d.Decs.Start) > 0 && len(first.Decs.Start) == 0 {
+		first.Decs.Start = d.Decs.Start
+	}
+	if last, ok := d.Specs[len(d.Specs)-1].(*dst.ValueSpec); ok && len(d.Decs.End) > 0 && len(last.Decs.End) == 0 {
+		last.Decs.End = d.Decs.End
 	}
 }
 
