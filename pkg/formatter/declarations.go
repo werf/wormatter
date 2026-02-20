@@ -101,10 +101,23 @@ func mergeSpecsIntoBlock(tok token.Token, specs []dst.Spec) *dst.GenDecl {
 	}
 	if len(specs) > 1 {
 		gd.Lparen = true
+		fixLastSpecEndComment(specs)
 		addEmptyLinesBetweenSpecGroups(specs)
 	}
 
 	return gd
+}
+
+func fixLastSpecEndComment(specs []dst.Spec) {
+	if len(specs) == 0 {
+		return
+	}
+	vs, ok := specs[len(specs)-1].(*dst.ValueSpec)
+	if !ok || len(vs.Decs.End) == 0 {
+		return
+	}
+	vs.Decs.Start = append(vs.Decs.Start, vs.Decs.End...)
+	vs.Decs.End = nil
 }
 
 func addEmptyLinesBetweenSpecGroups(specs []dst.Spec) {
@@ -126,7 +139,9 @@ func addEmptyLinesBetweenSpecGroups(specs []dst.Spec) {
 		} else {
 			vs.Decs.Before = dst.NewLine
 		}
-		vs.Decs.After = dst.None
+		if len(vs.Decs.End) == 0 {
+			vs.Decs.After = dst.None
+		}
 		lastGroup = currentGroup
 		lastType = currentType
 	}
