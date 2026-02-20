@@ -59,11 +59,11 @@ var (
 	singleConst  = 1
 	// Test: slice of anonymous structs with positional literals
 	sliceOfStructs = []struct {
-		content string
 		path    string
+		content string
 	}{
-		{content: "content1", path: filepath.Join("a", "b")},
-		{content: "content2", path: filepath.Join("c", "d")},
+		{path: filepath.Join("a", "b"), content: "content1"},
+		{path: filepath.Join("c", "d"), content: "content2"},
 	}
 )
 
@@ -263,9 +263,9 @@ func ProcessDataPublic(data string) string {
 // Test: anonymous struct with positional literal
 func createAnonymous() interface{} {
 	return struct {
-		A string
 		B int
-	}{A: "hello", B: 42}
+		A string
+	}{B: 42, A: "hello"}
 }
 
 // Test: empty literal - no change

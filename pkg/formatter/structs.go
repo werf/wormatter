@@ -8,7 +8,11 @@ import (
 
 func reorderStructFields(f *dst.File) {
 	dst.Inspect(f, func(n dst.Node) bool {
-		if st, ok := n.(*dst.StructType); ok {
+		ts, ok := n.(*dst.TypeSpec)
+		if !ok {
+			return true
+		}
+		if st, ok := ts.Type.(*dst.StructType); ok {
 			reorderFields(st)
 		}
 

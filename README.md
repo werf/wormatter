@@ -235,13 +235,15 @@ func (s *Server) stop() {}
 
 ### Struct Fields
 
-Fields are grouped (separated by empty lines):
+Fields in **named type declarations** (`type Foo struct{...}`) are grouped (separated by empty lines):
 
 | Order | Group | Sorting |
 |-------|-------|---------|
 | 1 | Embedded | Alphabetically by type name |
 | 2 | Public | Alphabetically |
 | 3 | Private | Alphabetically |
+
+Anonymous structs (table tests, inline struct fields, composite literal types) are **not** reordered.
 
 **Struct literals** with named fields are reordered to match the struct definition.
 
