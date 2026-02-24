@@ -17,12 +17,13 @@ func init() {
 var (
 	excludePatterns []string
 	rootCmd         = &cobra.Command{
-		Use:     "wormatter <path>...",
-		Short:   "A highly opinionated Go source code formatter",
-		Long:    "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
-		Version: version,
-		Args:    cobra.MinimumNArgs(1),
-		RunE:    run,
+		Use:          "wormatter <path>...",
+		Short:        "A highly opinionated Go source code formatter",
+		Long:         "Wormatter is a DST-based Go source code formatter. Highly opinionated, but very comprehensive. Gofumpt built-in.",
+		Version:      version,
+		Args:         cobra.MinimumNArgs(1),
+		RunE:         run,
+		SilenceUsage: true,
 	}
 	version = "dev"
 
