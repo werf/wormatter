@@ -393,3 +393,80 @@ type MultiLineInterface interface {
 // Types for interface test
 type Input struct{}
 type Output struct{}
+
+// Test: structs with encoding tags (json/yaml) should NOT be reordered
+type APIResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}
+
+// Test: structs with non-encoding tags should still be reordered
+type ValidatedInput struct {
+	Zulu  string `validate:"required"`
+	Alpha string `validate:"required"`
+	bravo int
+}
+
+// Test: spurious blank lines between struct fields should be removed
+type SpacedStruct struct {
+	logStore string
+
+	maxWidth int
+
+	client string
+
+	host string
+}
+
+// Test: doc comments on individual vars/consts are preserved during merge
+// EntryPoints defines supported entry points.
+var EntryPoints = []string{
+	"index.ts",
+	"index.js",
+}
+
+// MaxAttempts is the max retry count.
+var MaxAttempts = 5
+
+// defaultDelay is the default delay.
+var defaultDelay = 100
+
+// AppVersion is a documented constant.
+const AppVersion = "2.0"
+
+// internalBuild is private.
+const internalBuild = "abc123"
+
+// Test: inline comments on consts are preserved during reorder
+const (
+	ZetaVal  = "zeta"  // zeta inline
+	AlphaVal = "alpha" // alpha inline
+	BetaVal  = "beta"  // beta inline
+)
+
+// Test: variable declaration order preserved for init dependencies
+var Registry = []*Feature{}
+
+func NewFeature(name string) *Feature {
+	f := &Feature{Name: name}
+	Registry = append(Registry, f)
+
+	return f
+}
+
+var FeatureAlpha = NewFeature("alpha")
+var FeatureBeta = NewFeature("beta")
+
+type Feature struct {
+	Name string
+}
+
+// Test: typed consts with multiple custom types preserve original order
+type Severity string
+
+const (
+	SeverityCritical Severity = "critical"
+	SeverityWarning  Severity = "warning"
+	SeverityInfo     Severity = "info"
+)

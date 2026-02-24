@@ -58,6 +58,15 @@ Files starting with any of these comments are automatically skipped:
 task build
 ```
 
+## Quick Reference
+
+For a complete before/after example covering all formatting rules, see:
+
+- [`pkg/formatter/testdata/input.go`](pkg/formatter/testdata/input.go) — unformatted Go file
+- [`pkg/formatter/testdata/expected.go`](pkg/formatter/testdata/expected.go) — the same file after `wormatter` formats it
+
+These files are used as the main test fixture and showcase every rule described below: declaration reordering, const/var merging and grouping, struct field sorting, function signature collapsing, spacing normalization, encoding-tag preservation, doc comment preservation, and more.
+
 ## Formatting Rules
 
 ### File-Level Declaration Order
