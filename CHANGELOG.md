@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/werf/wormatter/compare/v1.3.3...v1.3.4) (2026-02-24)
+
+
+### Bug Fixes
+
+* silence usage on errors ([a575708](https://github.com/werf/wormatter/commit/a57570832d8f82d9e728267cf897765a19507027))
+
 ## [1.3.3](https://github.com/werf/wormatter/compare/v1.3.2...v1.3.3) (2026-02-24)
 
 
