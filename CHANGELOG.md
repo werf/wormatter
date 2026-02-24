@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.3](https://github.com/werf/wormatter/compare/v1.3.2...v1.3.3) (2026-02-24)
+
+
+### Bug Fixes
+
+* detect free-floating comments and return error before reordering ([5bf46db](https://github.com/werf/wormatter/commit/5bf46db87a99aca4017854a4c04bbde204d8ca2a))
+* only reorder struct fields in named type declarations ([ca893b4](https://github.com/werf/wormatter/commit/ca893b48d2e3a5bbe47d2460b833241e2c768dbc))
+* preserve doc comments when merging var/const declarations ([c03d2d9](https://github.com/werf/wormatter/commit/c03d2d90fc7db41fc6a71939d51651e3dc8691e1))
+* preserve inline comments on single-spec declarations during merge ([0e64e06](https://github.com/werf/wormatter/commit/0e64e063d2ce3a1b8f670a7a985a8363136dfb92))
+* preserve original order of typed string constants ([013e939](https://github.com/werf/wormatter/commit/013e939e93f284bb1568f738c8730ed755315bc9))
+* preserve var initialization order instead of sorting alphabetically ([d6511b9](https://github.com/werf/wormatter/commit/d6511b9762e7c16e2c488ba0c160501d34f7fc42))
+* remove spurious blank lines between struct fields ([d51810b](https://github.com/werf/wormatter/commit/d51810b116fdd20300e79818c69a6d5a3533c96b))
+* skip struct field reordering for structs with encoding tags ([4ac788b](https://github.com/werf/wormatter/commit/4ac788b404096128cc689aa1e7a35f1478713ac9))
+
 ## [1.3.2](https://github.com/werf/wormatter/compare/v1.3.1...v1.3.2) (2026-01-27)
 
 
