@@ -131,8 +131,8 @@ func main() {}
 | 3 | Private (lowercase) | By custom type |
 
 **Within each group:**
-- **Constants:** untyped consts sorted alphabetically; typed consts (e.g. `Stage`, `StatusCode`) preserve their original order to keep intentional orderings intact.
-- **Variables:** original order preserved (to avoid breaking initialization dependencies).
+- **Constants:** typed consts (e.g. `Stage`, `StatusCode`) come first, preserving their original order to keep intentional orderings intact; then untyped consts sorted alphabetically.
+- **Variables:** typed vars (e.g. `StatusCode`) come first, then untyped. Original order preserved within each sub-group (to avoid breaking initialization dependencies).
 
 <details>
 <summary>Example</summary>
@@ -150,11 +150,11 @@ const (
 
 // After
 const (
-    AppName = "myapp"
-    Version = "1.0"
-
     StatusError StatusCode = "error"
     StatusOK    StatusCode = "ok"
+
+    AppName = "myapp"
+    Version = "1.0"
 
     defaultTimeout = 30
     maxRetries     = 3

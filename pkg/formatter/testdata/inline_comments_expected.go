@@ -1,17 +1,17 @@
 package main
 
 const (
+	// doc comment for TypedZ
+	TypedZ MyType = "z"
+	// doc comment for TypedA
+	TypedA MyType = "a" // typed-a inline
+
 	AlphaConst        = "alpha"   // alpha inline comment
 	AnotherSingle     = "another" // another inline comment
 	BetaConst         = "beta"    // beta inline comment
 	SingleWithComment = "single"  // single inline comment
-	ZetaConst         = "zeta"    // zeta inline comment
-
-	// doc comment for TypedZ
-	TypedZ MyType = "z"
-	// doc comment for TypedA
-	// typed-a inline
-	TypedA MyType = "a"
+	// zeta inline comment
+	ZetaConst = "zeta"
 )
 
 var (

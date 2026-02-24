@@ -19,6 +19,14 @@ func init() {
 }
 
 const (
+	SeverityCritical Severity = "critical"
+	SeverityWarning  Severity = "warning"
+	SeverityInfo     Severity = "info"
+
+	StatusOK      StatusCode = "ok"
+	StatusError   StatusCode = "error"
+	StatusPending StatusCode = "pending"
+
 	AlphaVal = "alpha" // alpha inline
 	// AppVersion is a documented constant.
 	AppVersion  = "2.0"
@@ -30,14 +38,6 @@ const (
 	ConstZ = "z"
 	// Test: inline comments on consts are preserved during reorder
 	ZetaVal = "zeta" // zeta inline
-
-	SeverityCritical Severity = "critical"
-	SeverityWarning  Severity = "warning"
-	SeverityInfo     Severity = "info"
-
-	StatusOK      StatusCode = "ok"
-	StatusError   StatusCode = "error"
-	StatusPending StatusCode = "pending"
 
 	constPrivate = "private"
 	// internalBuild is private.
@@ -57,12 +57,11 @@ var (
 	_ Reader       = (*Server)(nil)
 	_ Writer       = (*Client)(nil)
 
-	GlobalPublic = "public"
-
 	// Test: custom type grouping in var block
 	DefaultStatus StatusCode = "default"
 	ErrorStatus   StatusCode = "error"
 
+	GlobalPublic = "public"
 	// Test: doc comments on individual vars/consts are preserved during merge
 	// EntryPoints defines supported entry points.
 	EntryPoints = []string{

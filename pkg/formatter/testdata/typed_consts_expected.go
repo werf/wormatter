@@ -1,10 +1,6 @@
 package main
 
 const (
-	UntypedA = "a"
-	UntypedM = "m"
-	UntypedZ = "z"
-
 	ReleaseTypeMajor ReleaseType = "major"
 	ReleaseTypeMinor ReleaseType = "minor"
 	ReleaseTypePatch ReleaseType = "patch"
@@ -12,6 +8,10 @@ const (
 	StagePreInstall  Stage = "pre-install"
 	StageInstall     Stage = "install"
 	StagePostInstall Stage = "post-install"
+
+	UntypedA = "a"
+	UntypedM = "m"
+	UntypedZ = "z"
 
 	untypedPrivateA = "a"
 	untypedPrivateZ = "z"

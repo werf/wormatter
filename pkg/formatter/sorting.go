@@ -61,6 +61,13 @@ func sortConstSpecsByExportabilityThenName(specs []dst.Spec) {
 		typeI := getSpecTypeName(specs[i])
 		typeJ := getSpecTypeName(specs[j])
 		if typeI != typeJ {
+			if typeI == "" {
+				return false
+			}
+			if typeJ == "" {
+				return true
+			}
+
 			return typeI < typeJ
 		}
 		if typeI != "" {
@@ -73,7 +80,25 @@ func sortConstSpecsByExportabilityThenName(specs []dst.Spec) {
 
 func sortVarSpecsByExportability(specs []dst.Spec) {
 	sort.SliceStable(specs, func(i, j int) bool {
-		return getExportGroup(getSpecFirstName(specs[i])) < getExportGroup(getSpecFirstName(specs[j]))
+		groupI := getExportGroup(getSpecFirstName(specs[i]))
+		groupJ := getExportGroup(getSpecFirstName(specs[j]))
+		if groupI != groupJ {
+			return groupI < groupJ
+		}
+		typeI := getSpecTypeName(specs[i])
+		typeJ := getSpecTypeName(specs[j])
+		if typeI != typeJ {
+			if typeI == "" {
+				return false
+			}
+			if typeJ == "" {
+				return true
+			}
+
+			return typeI < typeJ
+		}
+
+		return false
 	})
 }
 
