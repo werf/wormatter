@@ -5,6 +5,13 @@
 
 ### Features
 
+* sort typed const/var groups before untyped in merged blocks ([33e0398](https://github.com/werf/wormatter/commit/33e03983430fe5978fa17de77df6935ef23b2cbd))
+
+## [1.4.0](https://github.com/werf/wormatter/compare/v1.3.4...v1.4.0) (2026-02-24)
+
+
+### Features
+
 * sort typed const/var groups before untyped in merged blocks ([5cd3957](https://github.com/werf/wormatter/commit/5cd395732e1e6634b9b5d32c5c2598d0174c4237))
 
 ## [1.3.4](https://github.com/werf/wormatter/compare/v1.3.3...v1.3.4) (2026-02-24)
