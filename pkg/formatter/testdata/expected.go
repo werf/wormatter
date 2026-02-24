@@ -19,17 +19,29 @@ func init() {
 }
 
 const (
+	AlphaVal = "alpha" // alpha inline
+	// AppVersion is a documented constant.
+	AppVersion  = "2.0"
+	BetaVal     = "beta" // beta inline
 	ConstA      = "a"
 	ConstB      = "b"
 	ConstMiddle = "m"
 	// Test: consts should be merged and sorted
 	ConstZ = "z"
+	// Test: inline comments on consts are preserved during reorder
+	ZetaVal = "zeta" // zeta inline
+
+	SeverityCritical Severity = "critical"
+	SeverityWarning  Severity = "warning"
+	SeverityInfo     Severity = "info"
 
 	StatusOK      StatusCode = "ok"
 	StatusError   StatusCode = "error"
 	StatusPending StatusCode = "pending"
 
 	constPrivate = "private"
+	// internalBuild is private.
+	internalBuild = "abc123"
 )
 
 // Test: iota const block should stay separate
@@ -51,6 +63,19 @@ var (
 	DefaultStatus StatusCode = "default"
 	ErrorStatus   StatusCode = "error"
 
+	// Test: doc comments on individual vars/consts are preserved during merge
+	// EntryPoints defines supported entry points.
+	EntryPoints = []string{
+		"index.ts",
+		"index.js",
+	}
+	// MaxAttempts is the max retry count.
+	MaxAttempts = 5
+	// Test: variable declaration order preserved for init dependencies
+	Registry     = []*Feature{}
+	FeatureAlpha = NewFeature("alpha")
+	FeatureBeta  = NewFeature("beta")
+
 	// Test: vars should be merged and sorted
 	globalZ      = 10
 	globalA      = 5
@@ -65,6 +90,8 @@ var (
 		{path: filepath.Join("a", "b"), content: "content1"},
 		{path: filepath.Join("c", "d"), content: "content2"},
 	}
+	// defaultDelay is the default delay.
+	defaultDelay = 100
 )
 
 // Test: type declared in wrong place
@@ -83,6 +110,9 @@ type Priority int
 
 // Test: function type should collapse
 type MultiLineHandler func(w http.ResponseWriter, r *http.Request)
+
+// Test: typed consts with multiple custom types preserve original order
+type Severity string
 
 type Reader interface {
 	Read(p []byte) (n int, err error)
@@ -253,6 +283,40 @@ type WithEmbedded struct {
 type Input struct{}
 
 type Output struct{}
+
+// Test: structs with encoding tags (json/yaml) should NOT be reordered
+type APIResponse struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}
+
+// Test: structs with non-encoding tags should still be reordered
+type ValidatedInput struct {
+	Alpha string `validate:"required"`
+	Zulu  string `validate:"required"`
+
+	bravo int
+}
+
+// Test: spurious blank lines between struct fields should be removed
+type SpacedStruct struct {
+	client   string
+	host     string
+	logStore string
+	maxWidth int
+}
+
+type Feature struct {
+	Name string
+}
+
+func NewFeature(name string) *Feature {
+	f := &Feature{Name: name}
+	Registry = append(Registry, f)
+
+	return f
+}
 
 func HelperUpper() {}
 
