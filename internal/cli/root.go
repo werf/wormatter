@@ -11,7 +11,7 @@ import (
 
 func init() {
 	rootCmd.Flags().BoolVarP(&checkOnly, "check", "c", false, "Check if files need formatting (exit 1 if changes needed)")
-	rootCmd.Flags().StringArrayVarP(&excludePatterns, "exclude", "e", nil, "Exclude files matching glob pattern (can be specified multiple times)")
+	rootCmd.Flags().StringArrayVarP(&excludePatterns, "exclude", "e", nil, "Exclude files with paths matching regex (can be specified multiple times)")
 }
 
 var (

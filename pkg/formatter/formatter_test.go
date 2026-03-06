@@ -157,7 +157,7 @@ var x = 1
 	defer os.Remove(actualPath)
 
 	err := formatter.FormatFile(actualPath, formatter.Options{
-		ExcludePatterns: []string{"excluded.go"},
+		ExcludePatterns: []string{`excluded\.go$`},
 	})
 	if err != nil {
 		t.Fatalf("formatter failed: %v", err)

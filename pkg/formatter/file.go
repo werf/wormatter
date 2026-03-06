@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/dave/dst"
@@ -122,10 +123,7 @@ func checkFreeFloatingComments(f *dst.File, filePath string) error {
 
 func matchesAnyPattern(path string, patterns []string) bool {
 	for _, pattern := range patterns {
-		if matched, _ := filepath.Match(pattern, path); matched {
-			return true
-		}
-		if matched, _ := filepath.Match(pattern, filepath.Base(path)); matched {
+		if matched, _ := regexp.MatchString(pattern, path); matched {
 			return true
 		}
 	}
