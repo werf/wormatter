@@ -1,12 +1,11 @@
 # Changelog
 
-## [1.4.0](https://github.com/werf/wormatter/compare/v1.3.4...v1.4.0) (2026-03-06)
+## [1.5.0](https://github.com/werf/wormatter/compare/v1.4.0...v1.5.0) (2026-03-06)
 
 
 ### Features
 
 * `-e` now matches whole file path and using regex ([7687065](https://github.com/werf/wormatter/commit/768706513b5284f164182cff6417453b0d88ef67))
-* sort typed const/var groups before untyped in merged blocks ([33e0398](https://github.com/werf/wormatter/commit/33e03983430fe5978fa17de77df6935ef23b2cbd))
 
 ## [1.4.0](https://github.com/werf/wormatter/compare/v1.3.4...v1.4.0) (2026-02-24)
 
